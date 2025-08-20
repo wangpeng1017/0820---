@@ -1,0 +1,211 @@
+import React, { useState } from 'react'
+import { Layout, Menu, Avatar, Dropdown, Button, Badge, Space } from 'antd'
+import {
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
+  BellOutlined,
+  UserOutlined,
+  LogoutOutlined,
+  SettingOutlined,
+  DashboardOutlined,
+  ExperimentOutlined,
+  BarChartOutlined,
+  FileTextOutlined,
+  TeamOutlined,
+  ToolOutlined,
+  SafetyOutlined,
+  BulbOutlined,
+  DatabaseOutlined,
+  AppstoreOutlined,
+  RobotOutlined
+} from '@ant-design/icons'
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom'
+import { useAuthStore } from '../../stores/authStore'
+import { MODULES, MODULE_NAMES } from '../../constants'
+
+// 导入页面组件
+import Dashboard from '../../pages/Dashboard'
+import MarketInsight from '../../pages/MarketInsight'
+import FormulaManagement from '../../pages/FormulaManagement'
+import QualityManagement from '../../pages/QualityManagement'
+import ResearchAssistant from '../../pages/ResearchAssistant'
+import MaterialManagement from '../../pages/MaterialManagement'
+import FlavorManagement from '../../pages/FlavorManagement'
+import ProcessManagement from '../../pages/ProcessManagement'
+import LIMS from '../../pages/LIMS'
+
+const { Header, Sider, Content } = Layout
+
+const MainLayout: React.FC = () => {
+  const [collapsed, setCollapsed] = useState(false)
+  const { user } = useAuthStore()
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  // 菜单配置
+  const menuItems = [
+    {
+      key: MODULES.DASHBOARD,
+      icon: <DashboardOutlined />,
+      label: MODULE_NAMES[MODULES.DASHBOARD],
+      path: '/dashboard'
+    },
+    {
+      key: MODULES.MARKET_INSIGHT,
+      icon: <BarChartOutlined />,
+      label: MODULE_NAMES[MODULES.MARKET_INSIGHT],
+      path: '/market-insight'
+    },
+    {
+      key: MODULES.MATERIAL_MANAGEMENT,
+      icon: <DatabaseOutlined />,
+      label: MODULE_NAMES[MODULES.MATERIAL_MANAGEMENT],
+      path: '/material-management'
+    },
+    {
+      key: MODULES.FORMULA_MANAGEMENT,
+      icon: <ExperimentOutlined />,
+      label: MODULE_NAMES[MODULES.FORMULA_MANAGEMENT],
+      path: '/formula-management'
+    },
+    {
+      key: MODULES.FLAVOR_MANAGEMENT,
+      icon: <BulbOutlined />,
+      label: MODULE_NAMES[MODULES.FLAVOR_MANAGEMENT],
+      path: '/flavor-management'
+    },
+    {
+      key: MODULES.PROCESS_MANAGEMENT,
+      icon: <ToolOutlined />,
+      label: MODULE_NAMES[MODULES.PROCESS_MANAGEMENT],
+      path: '/process-management'
+    },
+    {
+      key: MODULES.QUALITY_MANAGEMENT,
+      icon: <SafetyOutlined />,
+      label: MODULE_NAMES[MODULES.QUALITY_MANAGEMENT],
+      path: '/quality-management'
+    },
+    {
+      key: MODULES.LIMS,
+      icon: <FileTextOutlined />,
+      label: MODULE_NAMES[MODULES.LIMS],
+      path: '/lims'
+    },
+    {
+      key: MODULES.RESEARCH_ASSISTANT,
+      icon: <RobotOutlined />,
+      label: MODULE_NAMES[MODULES.RESEARCH_ASSISTANT],
+      path: '/research-assistant'
+    }
+  ]
+
+  // 用户下拉菜单（移除登出功能）
+  const userMenuItems = [
+    {
+      key: 'profile',
+      icon: <UserOutlined />,
+      label: '个人资料'
+    },
+    {
+      key: 'settings',
+      icon: <SettingOutlined />,
+      label: '系统设置'
+    }
+  ]
+
+  const handleMenuClick = ({ key }: { key: string }) => {
+    const item = menuItems.find(item => item.key === key)
+    if (item) {
+      navigate(item.path)
+    }
+  }
+
+  // 获取当前选中的菜单项
+  const selectedKey = menuItems.find(item => 
+    location.pathname === item.path || 
+    (item.path !== '/dashboard' && location.pathname.startsWith(item.path))
+  )?.key || MODULES.DASHBOARD
+
+  return (
+    <Layout className="main-layout">
+      <Sider 
+        trigger={null} 
+        collapsible 
+        collapsed={collapsed}
+        className="layout-sider"
+        width={240}
+      >
+        <div style={{ 
+          height: 64, 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          color: 'white',
+          fontSize: collapsed ? 16 : 18,
+          fontWeight: 'bold',
+          borderBottom: '1px solid #001529'
+        }}>
+          {collapsed ? '数研' : '数字化研发平台'}
+        </div>
+        <Menu
+          theme="dark"
+          mode="inline"
+          selectedKeys={[selectedKey]}
+          items={menuItems}
+          onClick={handleMenuClick}
+          style={{ borderRight: 0 }}
+        />
+      </Sider>
+      
+      <Layout>
+        <Header className="layout-header" style={{ 
+          padding: '0 16px', 
+          background: '#fff',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between'
+        }}>
+          <Button
+            type="text"
+            icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+            onClick={() => setCollapsed(!collapsed)}
+            style={{ fontSize: 16, width: 64, height: 64 }}
+          />
+          
+          <Space size="middle">
+            <Badge count={5} size="small">
+              <Button type="text" icon={<BellOutlined />} size="large" />
+            </Badge>
+            
+            <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
+              <Space style={{ cursor: 'pointer' }}>
+                <Avatar icon={<UserOutlined />} />
+                <span>{user?.name}</span>
+              </Space>
+            </Dropdown>
+          </Space>
+        </Header>
+        
+        <Content className="layout-main">
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/market-insight/*" element={<MarketInsight />} />
+            <Route path="/material-management/*" element={<MaterialManagement />} />
+            <Route path="/formula-management/*" element={<FormulaManagement />} />
+            <Route path="/flavor-management/*" element={<FlavorManagement />} />
+            <Route path="/process-management/*" element={<ProcessManagement />} />
+            <Route path="/quality-management/*" element={<QualityManagement />} />
+            <Route path="/lims/*" element={<LIMS />} />
+            <Route path="/research-assistant/*" element={<ResearchAssistant />} />
+            {/* 所有其他路径都重定向到dashboard */}
+            <Route path="*" element={<Dashboard />} />
+          </Routes>
+        </Content>
+      </Layout>
+    </Layout>
+  )
+}
+
+export default MainLayout
