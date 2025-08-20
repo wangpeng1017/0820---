@@ -1020,7 +1020,7 @@ const MaterialManagement: React.FC = () => {
                   title: '预估产量(kg)',
                   dataIndex: 'expectedYield',
                   key: 'expectedYield',
-                  render: (yield: number) => yield.toLocaleString()
+                  render: (yieldValue: number) => yieldValue.toLocaleString()
                 },
                 {
                   title: '负责人',
