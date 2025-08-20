@@ -6,7 +6,6 @@ import {
   EyeOutlined,
   SwapOutlined,
   HistoryOutlined,
-  CompareOutlined,
   DownloadOutlined,
   ArrowRightOutlined,
   CheckCircleOutlined,
@@ -895,7 +894,7 @@ const FormulaManagement: React.FC = () => {
           <Button
             key="compare"
             type="primary"
-            icon={<CompareOutlined />}
+            icon={<SwapOutlined />}
             onClick={handleCompare}
             disabled={!selectedFormula1 || !selectedFormula2}
           >
@@ -983,7 +982,7 @@ const FormulaManagement: React.FC = () => {
                     <span><strong>{selectedFormula2.name}</strong> ({selectedFormula2.version})</span>
                   </Space>
                   <div style={{ marginTop: 16 }}>
-                    <Button type="primary" icon={<CompareOutlined />} onClick={handleCompare}>
+                    <Button type="primary" icon={<SwapOutlined />} onClick={handleCompare}>
                       开始比对分析
                     </Button>
                   </div>
