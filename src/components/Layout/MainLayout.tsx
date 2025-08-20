@@ -35,6 +35,9 @@ import DesignPlanning from '../../pages/DesignPlanning'
 import AuxiliaryMaterialDesign from '../../pages/AuxiliaryMaterialDesign'
 import PackagingDesign from '../../pages/PackagingDesign'
 import ReportGeneration from '../../pages/ReportGeneration'
+import AuxiliaryMaterialManagement from '../../pages/AuxiliaryMaterialManagement'
+import OnlineExperiment from '../../pages/OnlineExperiment'
+import ComprehensiveManagement from '../../pages/ComprehensiveManagement'
 
 const { Header, Sider, Content } = Layout
 
@@ -129,6 +132,24 @@ const MainLayout: React.FC = () => {
       icon: <FileTextOutlined />,
       label: '定型与输出数字化',
       path: '/report-generation'
+    },
+    {
+      key: 'auxiliary-material-management',
+      icon: <SettingOutlined />,
+      label: '材料管理(烟用辅材)',
+      path: '/auxiliary-material-management'
+    },
+    {
+      key: 'online-experiment',
+      icon: <ExperimentOutlined />,
+      label: '在线试验管理',
+      path: '/online-experiment'
+    },
+    {
+      key: 'comprehensive-management',
+      icon: <SettingOutlined />,
+      label: '综合管理',
+      path: '/comprehensive-management'
     }
   ]
 
@@ -241,6 +262,9 @@ const MainLayout: React.FC = () => {
             <Route path="/auxiliary-material-design/*" element={<AuxiliaryMaterialDesign />} />
             <Route path="/packaging-design/*" element={<PackagingDesign />} />
             <Route path="/report-generation/*" element={<ReportGeneration />} />
+            <Route path="/auxiliary-material-management/*" element={<AuxiliaryMaterialManagement />} />
+            <Route path="/online-experiment/*" element={<OnlineExperiment />} />
+            <Route path="/comprehensive-management/*" element={<ComprehensiveManagement />} />
             {/* 所有其他路径都重定向到dashboard */}
             <Route path="*" element={<Dashboard />} />
           </Routes>
