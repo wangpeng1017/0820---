@@ -51,16 +51,142 @@ const QualityManagement: React.FC = () => {
       ],
       conclusion: '水分含量略高，需要进一步干燥处理。',
       notes: '建议延长干燥时间2小时'
+    },
+    {
+      id: 'QT003',
+      sampleId: 'S2024031503',
+      testType: '半成品检验',
+      testDate: '2024-03-16',
+      tester: '赵检测',
+      status: 'completed',
+      results: [
+        { parameter: '填充值', value: 3.15, unit: 'cm³/g', standard: '3.0-3.5', result: 'pass' },
+        { parameter: '碎丝率', value: 4.2, unit: '%', standard: '≤5%', result: 'pass' },
+        { parameter: '含水率', value: 12.5, unit: '%', standard: '11.5-13.5%', result: 'pass' },
+        { parameter: '整丝率', value: 85.6, unit: '%', standard: '≥80%', result: 'pass' }
+      ],
+      conclusion: '半成品质量良好，各项指标正常。',
+      notes: '可以进入下一工序'
+    },
+    {
+      id: 'QT004',
+      sampleId: 'S2024031504',
+      testType: '包装材料检验',
+      testDate: '2024-03-17',
+      tester: '孙检测',
+      status: 'completed',
+      results: [
+        { parameter: '透气度', value: 25, unit: 'CU', standard: '20-30CU', result: 'pass' },
+        { parameter: '拉伸强度', value: 45, unit: 'N/15mm', standard: '≥40N/15mm', result: 'pass' },
+        { parameter: '厚度', value: 0.012, unit: 'mm', standard: '0.010-0.015mm', result: 'pass' },
+        { parameter: '印刷质量', value: '优良', unit: '', standard: '合格', result: 'pass' }
+      ],
+      conclusion: '包装材料质量优良，符合使用要求。',
+      notes: '新供应商材料质量稳定'
+    },
+    {
+      id: 'QT005',
+      sampleId: 'S2024031505',
+      testType: '环境检测',
+      testDate: '2024-03-18',
+      tester: '钱检测',
+      status: 'pending',
+      results: [
+        { parameter: '温度', value: 22.5, unit: '℃', standard: '20-25℃', result: 'pass' },
+        { parameter: '湿度', value: 58, unit: '%', standard: '55-65%', result: 'pass' },
+        { parameter: '洁净度', value: 8500, unit: '级', standard: '≤10000级', result: 'pass' }
+      ],
+      conclusion: '环境条件良好，符合生产要求。',
+      notes: '定期监测，保持稳定'
+    },
+    {
+      id: 'QT006',
+      sampleId: 'S2024031506',
+      testType: '滤棒检验',
+      testDate: '2024-03-19',
+      tester: '周检测',
+      status: 'completed',
+      results: [
+        { parameter: '压降', value: 1050, unit: 'Pa', standard: '950-1150Pa', result: 'pass' },
+        { parameter: '硬度', value: 85, unit: '%', standard: '80-90%', result: 'pass' },
+        { parameter: '圆周', value: 24.5, unit: 'mm', standard: '24.3-24.7mm', result: 'pass' },
+        { parameter: '长度', value: 20.0, unit: 'mm', standard: '19.8-20.2mm', result: 'pass' }
+      ],
+      conclusion: '滤棒质量合格，各项指标达标。',
+      notes: '生产工艺稳定'
+    },
+    {
+      id: 'QT007',
+      sampleId: 'S2024031507',
+      testType: '香精检验',
+      testDate: '2024-03-20',
+      tester: '吴检测',
+      status: 'testing',
+      results: [
+        { parameter: '香气强度', value: 8.5, unit: '分', standard: '≥8.0分', result: 'pass' },
+        { parameter: '留香时间', value: 45, unit: '秒', standard: '≥40秒', result: 'pass' },
+        { parameter: '稳定性', value: '良好', unit: '', standard: '良好', result: 'pass' }
+      ],
+      conclusion: '香精质量良好，香气表现优异。',
+      notes: '新配方效果理想'
+    },
+    {
+      id: 'QT008',
+      sampleId: 'S2024031508',
+      testType: '微生物检测',
+      testDate: '2024-03-21',
+      tester: '郑检测',
+      status: 'failed',
+      results: [
+        { parameter: '细菌总数', value: 1200, unit: 'CFU/g', standard: '≤1000CFU/g', result: 'fail' },
+        { parameter: '霉菌', value: 85, unit: 'CFU/g', standard: '≤100CFU/g', result: 'pass' },
+        { parameter: '酵母菌', value: 45, unit: 'CFU/g', standard: '≤50CFU/g', result: 'pass' },
+        { parameter: '致病菌', value: '未检出', unit: '', standard: '不得检出', result: 'pass' }
+      ],
+      conclusion: '细菌总数超标，需要重新处理。',
+      notes: '加强卫生控制，重新检测'
+    },
+    {
+      id: 'QT009',
+      sampleId: 'S2024031509',
+      testType: '重金属检测',
+      testDate: '2024-03-22',
+      tester: '冯检测',
+      status: 'completed',
+      results: [
+        { parameter: '铅', value: 0.8, unit: 'mg/kg', standard: '≤2.0mg/kg', result: 'pass' },
+        { parameter: '镉', value: 0.3, unit: 'mg/kg', standard: '≤1.0mg/kg', result: 'pass' },
+        { parameter: '汞', value: 0.05, unit: 'mg/kg', standard: '≤0.1mg/kg', result: 'pass' },
+        { parameter: '砷', value: 0.2, unit: 'mg/kg', standard: '≤0.5mg/kg', result: 'pass' }
+      ],
+      conclusion: '重金属含量均在安全范围内。',
+      notes: '符合食品安全标准'
+    },
+    {
+      id: 'QT010',
+      sampleId: 'S2024031510',
+      testType: '农药残留检测',
+      testDate: '2024-03-23',
+      tester: '韩检测',
+      status: 'completed',
+      results: [
+        { parameter: '有机磷', value: 0.02, unit: 'mg/kg', standard: '≤0.05mg/kg', result: 'pass' },
+        { parameter: '有机氯', value: 0.01, unit: 'mg/kg', standard: '≤0.02mg/kg', result: 'pass' },
+        { parameter: '氨基甲酸酯', value: 0.005, unit: 'mg/kg', standard: '≤0.01mg/kg', result: 'pass' },
+        { parameter: '拟除虫菊酯', value: 0.008, unit: 'mg/kg', standard: '≤0.02mg/kg', result: 'pass' }
+      ],
+      conclusion: '农药残留检测全部合格。',
+      notes: '原料安全可靠'
     }
   ]
 
   // 统计数据
   const stats = {
-    totalTests: 156,
-    passedTests: 142,
-    failedTests: 8,
+    totalTests: 186,
+    passedTests: 168,
+    failedTests: 12,
     pendingTests: 6,
-    passRate: 91.0
+    passRate: 90.3
   }
 
   const columns = [

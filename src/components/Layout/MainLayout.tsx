@@ -126,32 +126,37 @@ const MainLayout: React.FC = () => {
 
   return (
     <Layout className="main-layout">
-      <Sider 
-        trigger={null} 
-        collapsible 
+      <Sider
+        trigger={null}
+        collapsible
         collapsed={collapsed}
         className="layout-sider"
         width={240}
+        style={{ background: '#ffffff' }}
       >
-        <div style={{ 
-          height: 64, 
-          display: 'flex', 
-          alignItems: 'center', 
+        <div style={{
+          height: 64,
+          display: 'flex',
+          alignItems: 'center',
           justifyContent: 'center',
-          color: 'white',
+          color: '#333333',
           fontSize: collapsed ? 16 : 18,
           fontWeight: 'bold',
-          borderBottom: '1px solid #001529'
+          borderBottom: '1px solid #e8e8e8',
+          background: '#ffffff'
         }}>
           {collapsed ? '数研' : '数字化研发平台'}
         </div>
         <Menu
-          theme="dark"
+          theme="light"
           mode="inline"
           selectedKeys={[selectedKey]}
           items={menuItems}
           onClick={handleMenuClick}
-          style={{ borderRight: 0 }}
+          style={{
+            borderRight: '1px solid #e8e8e8',
+            background: '#ffffff'
+          }}
         />
       </Sider>
       

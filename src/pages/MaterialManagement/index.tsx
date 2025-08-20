@@ -48,6 +48,90 @@ const MaterialManagement: React.FC = () => {
       supplier: '国际贸易公司',
       status: 'low',
       expiryDate: '2024-08-20'
+    },
+    {
+      id: 'M004',
+      name: '四川下部烟叶',
+      type: '主料',
+      origin: '四川省',
+      grade: 'A级',
+      stock: 980,
+      unit: 'kg',
+      supplier: '四川烟草公司',
+      status: 'normal',
+      expiryDate: '2024-11-30'
+    },
+    {
+      id: 'M005',
+      name: '福建烟叶',
+      type: '辅料',
+      origin: '福建省',
+      grade: 'B级',
+      stock: 650,
+      unit: 'kg',
+      supplier: '福建烟草公司',
+      status: 'normal',
+      expiryDate: '2024-09-25'
+    },
+    {
+      id: 'M006',
+      name: '津巴布韦烟叶',
+      type: '调节料',
+      origin: '津巴布韦',
+      grade: 'A级',
+      stock: 420,
+      unit: 'kg',
+      supplier: '非洲贸易公司',
+      status: 'warning',
+      expiryDate: '2024-07-15'
+    },
+    {
+      id: 'M007',
+      name: '湖南烟叶',
+      type: '主料',
+      origin: '湖南省',
+      grade: 'A级',
+      stock: 1150,
+      unit: 'kg',
+      supplier: '湖南烟草公司',
+      status: 'normal',
+      expiryDate: '2025-01-20'
+    },
+    {
+      id: 'M008',
+      name: '贵州烟叶',
+      type: '辅料',
+      origin: '贵州省',
+      grade: 'B级',
+      stock: 780,
+      unit: 'kg',
+      supplier: '贵州烟草公司',
+      status: 'normal',
+      expiryDate: '2024-10-30'
+    },
+    {
+      id: 'M009',
+      name: '美国弗吉尼亚烟叶',
+      type: '调节料',
+      origin: '美国',
+      grade: 'S级',
+      stock: 280,
+      unit: 'kg',
+      supplier: '美国烟草进出口',
+      status: 'low',
+      expiryDate: '2024-06-30'
+    },
+    {
+      id: 'M010',
+      name: '土耳其东方烟',
+      type: '香料烟',
+      origin: '土耳其',
+      grade: 'A级',
+      stock: 180,
+      unit: 'kg',
+      supplier: '土耳其贸易公司',
+      status: 'low',
+      expiryDate: '2024-08-15'
     }
   ]
 

@@ -82,6 +82,48 @@ const ResearchAssistant: React.FC = () => {
       description: '收录了多个成功的工艺参数优化案例',
       tags: ['工艺优化', '案例分析'],
       updateTime: '2024-03-08'
+    },
+    {
+      title: '香精调配技术手册',
+      description: '香精调配的基础理论和实践技巧',
+      tags: ['香精调配', '技术手册'],
+      updateTime: '2024-03-20'
+    },
+    {
+      title: '市场调研方法论',
+      description: '消费者调研和市场分析的方法和工具',
+      tags: ['市场调研', '方法论'],
+      updateTime: '2024-03-18'
+    },
+    {
+      title: '设备维护保养规程',
+      description: '生产设备的维护保养标准操作程序',
+      tags: ['设备维护', '操作规程'],
+      updateTime: '2024-03-22'
+    },
+    {
+      title: '环保法规汇编',
+      description: '烟草行业相关的环保法规和标准',
+      tags: ['环保法规', '合规管理'],
+      updateTime: '2024-03-25'
+    },
+    {
+      title: '新产品开发流程',
+      description: '从概念到上市的完整产品开发流程',
+      tags: ['产品开发', '流程管理'],
+      updateTime: '2024-03-28'
+    },
+    {
+      title: '供应链管理最佳实践',
+      description: '原料采购和供应链优化的经验总结',
+      tags: ['供应链', '最佳实践'],
+      updateTime: '2024-03-30'
+    },
+    {
+      title: '数字化转型指南',
+      description: '传统制造业数字化转型的策略和方法',
+      tags: ['数字化', '转型指南'],
+      updateTime: '2024-04-01'
     }
   ]
 
@@ -103,6 +145,48 @@ const ResearchAssistant: React.FC = () => {
       type: 'XLSX',
       size: '856KB',
       updateTime: '2024-03-18'
+    },
+    {
+      title: '市场调研分析报告',
+      type: 'PDF',
+      size: '3.1MB',
+      updateTime: '2024-03-25'
+    },
+    {
+      title: '工艺改进技术方案',
+      type: 'DOCX',
+      size: '2.7MB',
+      updateTime: '2024-03-24'
+    },
+    {
+      title: '供应商评估表',
+      type: 'XLSX',
+      size: '1.2MB',
+      updateTime: '2024-03-23'
+    },
+    {
+      title: '环保合规检查清单',
+      type: 'PDF',
+      size: '945KB',
+      updateTime: '2024-03-22'
+    },
+    {
+      title: '设备维护计划表',
+      type: 'XLSX',
+      size: '678KB',
+      updateTime: '2024-03-21'
+    },
+    {
+      title: '新品牌策划方案',
+      type: 'PPTX',
+      size: '4.5MB',
+      updateTime: '2024-03-26'
+    },
+    {
+      title: '数字化转型路线图',
+      type: 'PDF',
+      size: '1.9MB',
+      updateTime: '2024-03-27'
     }
   ]
 

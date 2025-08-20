@@ -23,8 +23,45 @@
 }
 
 .layout-sider {
-  background: #001529;
+  background: #ffffff !important;
   overflow-y: auto;
+  border-right: 1px solid #e8e8e8 !important;
+}
+
+/* 浅色主题导航菜单样式 */
+.layout-sider .ant-menu-light {
+  background: #ffffff !important;
+  color: #333333 !important;
+}
+
+.layout-sider .ant-menu-light .ant-menu-item {
+  color: #333333 !important;
+}
+
+.layout-sider .ant-menu-light .ant-menu-item:hover {
+  background-color: #f5f5f5 !important;
+  color: #1890ff !important;
+}
+
+.layout-sider .ant-menu-light .ant-menu-item-selected {
+  background-color: #e6f7ff !important;
+  color: #1890ff !important;
+}
+
+.layout-sider .ant-menu-light .ant-menu-item-selected::after {
+  border-right: 3px solid #1890ff !important;
+}
+
+.layout-sider .ant-menu-light .ant-menu-item .anticon {
+  color: #666666;
+}
+
+.layout-sider .ant-menu-light .ant-menu-item:hover .anticon {
+  color: #1890ff !important;
+}
+
+.layout-sider .ant-menu-light .ant-menu-item-selected .anticon {
+  color: #1890ff !important;
 }
 
 .layout-main {

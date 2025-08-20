@@ -56,6 +56,69 @@ const MarketInsight: React.FC = () => {
       income: '5K-10K',
       preferences: ['创新口味', '个性包装', '社交属性'],
       score: 85
+    },
+    {
+      id: '4',
+      segment: '成熟消费者',
+      age: '45-55岁',
+      gender: '男性为主(82%)',
+      income: '20K-40K',
+      preferences: ['传统口味', '品牌历史', '稳定品质'],
+      score: 90
+    },
+    {
+      id: '5',
+      segment: '女性消费者',
+      age: '25-40岁',
+      gender: '女性(100%)',
+      income: '6K-18K',
+      preferences: ['轻柔口感', '精美包装', '健康理念'],
+      score: 78
+    },
+    {
+      id: '6',
+      segment: '高端消费者',
+      age: '40-60岁',
+      gender: '男性为主(75%)',
+      income: '30K+',
+      preferences: ['奢华品质', '限量版本', '收藏价值'],
+      score: 95
+    },
+    {
+      id: '7',
+      segment: '学生群体',
+      age: '18-25岁',
+      gender: '男性为主(60%)',
+      income: '2K-6K',
+      preferences: ['价格实惠', '口味清淡', '便携包装'],
+      score: 72
+    },
+    {
+      id: '8',
+      segment: '工薪阶层',
+      age: '30-50岁',
+      gender: '男性为主(70%)',
+      income: '5K-12K',
+      preferences: ['性价比高', '口感适中', '经济实用'],
+      score: 86
+    },
+    {
+      id: '9',
+      segment: '退休人群',
+      age: '55-70岁',
+      gender: '男性为主(85%)',
+      income: '3K-8K',
+      preferences: ['传统品牌', '温和口感', '健康考虑'],
+      score: 80
+    },
+    {
+      id: '10',
+      segment: '新兴中产',
+      age: '28-38岁',
+      gender: '性别均衡',
+      income: '12K-25K',
+      preferences: ['品质生活', '品牌调性', '社交需求'],
+      score: 89
     }
   ]
 

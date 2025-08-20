@@ -7,7 +7,7 @@ Mock.setup({
 })
 
 // 生成模拟项目数据
-export const generateMockProjects = (count: number = 20): Project[] => {
+export const generateMockProjects = (count: number = 32): Project[] => {
   return Mock.mock({
     [`data|${count}`]: [{
       'id|+1': 1,
@@ -26,7 +26,7 @@ export const generateMockProjects = (count: number = 20): Project[] => {
 }
 
 // 生成模拟配方数据
-export const generateMockFormulas = (count: number = 50): Formula[] => {
+export const generateMockFormulas = (count: number = 80): Formula[] => {
   return Mock.mock({
     [`data|${count}`]: [{
       'id': '@string("upper", 1)@string("number", 3)',
@@ -59,7 +59,7 @@ export const generateMockFormulas = (count: number = 50): Formula[] => {
 }
 
 // 生成模拟质量检测数据
-export const generateMockQualityTests = (count: number = 30): QualityTest[] => {
+export const generateMockQualityTests = (count: number = 50): QualityTest[] => {
   return Mock.mock({
     [`data|${count}`]: [{
       'id': 'QT@string("number", 3)',
@@ -82,7 +82,7 @@ export const generateMockQualityTests = (count: number = 30): QualityTest[] => {
 }
 
 // 生成模拟市场洞察数据
-export const generateMockMarketInsights = (count: number = 15): MarketInsight[] => {
+export const generateMockMarketInsights = (count: number = 25): MarketInsight[] => {
   return Mock.mock({
     [`data|${count}`]: [{
       'id|+1': 1,
