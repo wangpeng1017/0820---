@@ -30,6 +30,11 @@ import MaterialManagement from '../../pages/MaterialManagement'
 import FlavorManagement from '../../pages/FlavorManagement'
 import ProcessManagement from '../../pages/ProcessManagement'
 import LIMS from '../../pages/LIMS'
+import DesignDashboard from '../../pages/DesignDashboard'
+import DesignPlanning from '../../pages/DesignPlanning'
+import AuxiliaryMaterialDesign from '../../pages/AuxiliaryMaterialDesign'
+import PackagingDesign from '../../pages/PackagingDesign'
+import ReportGeneration from '../../pages/ReportGeneration'
 
 const { Header, Sider, Content } = Layout
 
@@ -94,6 +99,36 @@ const MainLayout: React.FC = () => {
       icon: <RobotOutlined />,
       label: MODULE_NAMES[MODULES.RESEARCH_ASSISTANT],
       path: '/research-assistant'
+    },
+    {
+      key: 'design-dashboard',
+      icon: <DashboardOutlined />,
+      label: '数字化研发设计看板',
+      path: '/design-dashboard'
+    },
+    {
+      key: 'design-planning',
+      icon: <BulbOutlined />,
+      label: '设计策划数字化',
+      path: '/design-planning'
+    },
+    {
+      key: 'auxiliary-material-design',
+      icon: <ToolOutlined />,
+      label: '三纸一棒数字化设计',
+      path: '/auxiliary-material-design'
+    },
+    {
+      key: 'packaging-design',
+      icon: <FileTextOutlined />,
+      label: '包装材料数字化设计',
+      path: '/packaging-design'
+    },
+    {
+      key: 'report-generation',
+      icon: <FileTextOutlined />,
+      label: '定型与输出数字化',
+      path: '/report-generation'
     }
   ]
 
@@ -201,6 +236,11 @@ const MainLayout: React.FC = () => {
             <Route path="/quality-management/*" element={<QualityManagement />} />
             <Route path="/lims/*" element={<LIMS />} />
             <Route path="/research-assistant/*" element={<ResearchAssistant />} />
+            <Route path="/design-dashboard/*" element={<DesignDashboard />} />
+            <Route path="/design-planning/*" element={<DesignPlanning />} />
+            <Route path="/auxiliary-material-design/*" element={<AuxiliaryMaterialDesign />} />
+            <Route path="/packaging-design/*" element={<PackagingDesign />} />
+            <Route path="/report-generation/*" element={<ReportGeneration />} />
             {/* 所有其他路径都重定向到dashboard */}
             <Route path="*" element={<Dashboard />} />
           </Routes>

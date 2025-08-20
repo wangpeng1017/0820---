@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Card, Table, Button, Input, Select, Space, Tag, Modal, Form, InputNumber, Tabs, Row, Col, Statistic } from 'antd'
+import { Card, Table, Button, Input, Select, Space, Tag, Modal, Form, InputNumber, Tabs, Row, Col, Statistic, Alert, Progress, Upload } from 'antd'
 import {
   PlusOutlined,
   EditOutlined,
@@ -8,7 +8,11 @@ import {
   ExperimentOutlined,
   ShoppingOutlined,
   AlertOutlined,
-  CheckCircleOutlined
+  CheckCircleOutlined,
+  ThunderboltOutlined,
+  InboxOutlined,
+  CopyOutlined,
+  BulbOutlined
 } from '@ant-design/icons'
 
 const { Search } = Input
@@ -766,6 +770,121 @@ const FlavorManagement: React.FC = () => {
                 showQuickJumper: true,
                 showTotal: (total, range) => `第 ${range[0]}-${range[1]} 条，共 ${total} 条`
               }}
+            />
+          </Card>
+        </TabPane>
+
+        <TabPane tab="AI辅助辨香" key="ai-identification" icon={<ExperimentOutlined />}>
+          <Row gutter={[16, 16]}>
+            <Col xs={24} lg={12}>
+              <Card title="GC-MS谱图分析" extra={<Tag color="blue">AI驱动</Tag>}>
+                <Space direction="vertical" style={{ width: '100%' }}>
+                  <Alert
+                    message="AI辅助辨香系统"
+                    description="基于GC-MS谱图数据，智能识别香气成分和含量"
+                    type="info"
+                    showIcon
+                  />
+
+                  <Form layout="vertical">
+                    <Form.Item label="样品信息">
+                      <Input placeholder="请输入样品编号" />
+                    </Form.Item>
+
+                    <Form.Item label="谱图上传">
+                      <Upload.Dragger>
+                        <p className="ant-upload-drag-icon">
+                          <InboxOutlined />
+                        </p>
+                        <p className="ant-upload-text">点击或拖拽上传GC-MS谱图文件</p>
+                        <p className="ant-upload-hint">支持 .txt, .csv, .xlsx 格式</p>
+                      </Upload.Dragger>
+                    </Form.Item>
+
+                    <Form.Item label="分析参数">
+                      <Row gutter={8}>
+                        <Col span={12}>
+                          <Select placeholder="检测模式" style={{ width: '100%' }}>
+                            <Option value="full_scan">全扫描</Option>
+                            <Option value="sim">选择离子监测</Option>
+                            <Option value="mrm">多反应监测</Option>
+                          </Select>
+                        </Col>
+                        <Col span={12}>
+                          <Select placeholder="灵敏度" style={{ width: '100%' }}>
+                            <Option value="high">高灵敏度</Option>
+                            <Option value="medium">中等灵敏度</Option>
+                            <Option value="low">低灵敏度</Option>
+                          </Select>
+                        </Col>
+                      </Row>
+                    </Form.Item>
+
+                    <Button type="primary" icon={<ThunderboltOutlined />} block>
+                      开始AI分析
+                    </Button>
+                  </Form>
+                </Space>
+              </Card>
+            </Col>
+
+            <Col xs={24} lg={12}>
+              <Card title="分析结果" extra={<Tag color="green">置信度: 94%</Tag>}>
+                <Space direction="vertical" style={{ width: '100%' }}>
+                  <div>
+                    <h4>检测到的香气成分：</h4>
+                    <Table
+                      size="small"
+                      columns={[
+                        { title: '成分名称', dataIndex: 'name', key: 'name' },
+                        { title: '含量(%)', dataIndex: 'content', key: 'content' },
+                        { title: '置信度', dataIndex: 'confidence', key: 'confidence', render: (conf: number) => <Progress percent={conf} size="small" /> }
+                      ]}
+                      dataSource={[
+                        { name: '香兰素', content: 15.2, confidence: 96 },
+                        { name: '乙基香兰素', content: 8.7, confidence: 92 },
+                        { name: '苯甲醛', content: 6.3, confidence: 89 },
+                        { name: '肉桂醛', content: 4.1, confidence: 85 },
+                        { name: '丁香酚', content: 3.8, confidence: 88 }
+                      ]}
+                      pagination={false}
+                    />
+                  </div>
+
+                  <div>
+                    <h4>香气特征分析：</h4>
+                    <Tag color="orange">甜香</Tag>
+                    <Tag color="green">花香</Tag>
+                    <Tag color="blue">果香</Tag>
+                    <Tag color="purple">木香</Tag>
+                  </div>
+
+                  <Button type="primary" block>
+                    生成分析报告
+                  </Button>
+                </Space>
+              </Card>
+            </Col>
+          </Row>
+
+          <Card title="历史分析记录" style={{ marginTop: 16 }}>
+            <Table
+              size="small"
+              columns={[
+                { title: '样品编号', dataIndex: 'sampleId', key: 'sampleId' },
+                { title: '分析时间', dataIndex: 'time', key: 'time' },
+                { title: '检测成分数', dataIndex: 'components', key: 'components' },
+                { title: '主要香型', dataIndex: 'mainType', key: 'mainType', render: (type: string) => <Tag>{type}</Tag> },
+                { title: '置信度', dataIndex: 'confidence', key: 'confidence', render: (conf: number) => <Progress percent={conf} size="small" /> },
+                { title: '分析师', dataIndex: 'analyst', key: 'analyst' },
+                { title: '操作', key: 'action', render: () => <Button type="link" size="small">查看详情</Button> }
+              ]}
+              dataSource={[
+                { sampleId: 'S2024030001', time: '2024-03-30 14:30', components: 25, mainType: '甜香型', confidence: 94, analyst: '张分析' },
+                { sampleId: 'S2024030002', time: '2024-03-29 10:15', components: 18, mainType: '花香型', confidence: 91, analyst: '李分析' },
+                { sampleId: 'S2024030003', time: '2024-03-28 16:45', components: 22, mainType: '果香型', confidence: 88, analyst: '王分析' }
+              ]}
+              pagination={false}
             />
           </Card>
         </TabPane>

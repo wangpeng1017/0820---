@@ -1,19 +1,91 @@
 import React, { useState } from 'react'
-import { Card, Tabs, Button, Upload, Progress, Table, Tag, Space, Row, Col, Statistic } from 'antd'
-import { 
-  UploadOutlined, 
-  SoundOutlined, 
+import { Card, Tabs, Button, Upload, Progress, Table, Tag, Space, Row, Col, Statistic, Modal, Form, Input, Select, Radio, Checkbox, Rate, Divider } from 'antd'
+import {
+  UploadOutlined,
+  SoundOutlined,
   BarChartOutlined,
   FileTextOutlined,
   UserOutlined,
   ShoppingOutlined,
-  TrophyOutlined
+  TrophyOutlined,
+  FormOutlined,
+  PlusOutlined,
+  EditOutlined,
+  EyeOutlined,
+  DeleteOutlined,
+  SendOutlined,
+  DownloadOutlined,
+  CopyOutlined
 } from '@ant-design/icons'
 
 const { TabPane } = Tabs
+const { Option } = Select
+const { TextArea } = Input
+
+// 问卷相关接口定义
+interface QuestionOption {
+  id: string
+  text: string
+  value: string
+}
+
+interface Question {
+  id: string
+  type: 'single' | 'multiple' | 'scale' | 'text'
+  title: string
+  description?: string
+  required: boolean
+  options?: QuestionOption[]
+  scaleMin?: number
+  scaleMax?: number
+  scaleLabels?: string[]
+}
+
+interface SurveyTemplate {
+  id: string
+  name: string
+  category: string
+  description: string
+  targetAudience: string
+  estimatedTime: number
+  questions: Question[]
+  creator: string
+  createTime: string
+  updateTime: string
+  status: 'draft' | 'active' | 'archived'
+  responseCount: number
+}
+
+interface SurveyResponse {
+  id: string
+  surveyId: string
+  respondentId: string
+  responses: Record<string, any>
+  submitTime: string
+  duration: number
+  source: string
+}
+
+interface SurveyAnalysis {
+  surveyId: string
+  totalResponses: number
+  completionRate: number
+  averageDuration: number
+  questionAnalysis: Array<{
+    questionId: string
+    questionTitle: string
+    responseCount: number
+    results: any
+  }>
+}
 
 const MarketInsight: React.FC = () => {
   const [activeTab, setActiveTab] = useState('voice-analysis')
+  const [surveyModalVisible, setSurveyModalVisible] = useState(false)
+  const [surveyModalType, setSurveyModalType] = useState<'create' | 'edit' | 'view'>('create')
+  const [selectedSurvey, setSelectedSurvey] = useState<SurveyTemplate | null>(null)
+  const [compareModalVisible, setCompareModalVisible] = useState(false)
+  const [analysisModalVisible, setAnalysisModalVisible] = useState(false)
 
   // 模拟语音识别数据
   const voiceAnalysisData = {
@@ -160,6 +232,322 @@ const MarketInsight: React.FC = () => {
     }
   ]
 
+  // 问卷模板数据
+  const surveyTemplates: SurveyTemplate[] = [
+    {
+      id: 'ST001',
+      name: '消费者偏好调研问卷',
+      category: '消费者研究',
+      description: '了解消费者对卷烟产品的偏好和购买行为',
+      targetAudience: '18-65岁吸烟人群',
+      estimatedTime: 8,
+      questions: [
+        {
+          id: 'Q001',
+          type: 'single',
+          title: '您的年龄段是？',
+          required: true,
+          options: [
+            { id: 'O001', text: '18-25岁', value: '18-25' },
+            { id: 'O002', text: '26-35岁', value: '26-35' },
+            { id: 'O003', text: '36-45岁', value: '36-45' },
+            { id: 'O004', text: '46-55岁', value: '46-55' },
+            { id: 'O005', text: '56-65岁', value: '56-65' }
+          ]
+        },
+        {
+          id: 'Q002',
+          type: 'multiple',
+          title: '您在选择卷烟时最关注哪些因素？（可多选）',
+          required: true,
+          options: [
+            { id: 'O006', text: '口感', value: 'taste' },
+            { id: 'O007', text: '价格', value: 'price' },
+            { id: 'O008', text: '品牌', value: 'brand' },
+            { id: 'O009', text: '包装', value: 'package' },
+            { id: 'O010', text: '焦油含量', value: 'tar' }
+          ]
+        },
+        {
+          id: 'Q003',
+          type: 'scale',
+          title: '您对当前使用的卷烟产品满意度如何？',
+          required: true,
+          scaleMin: 1,
+          scaleMax: 5,
+          scaleLabels: ['非常不满意', '不满意', '一般', '满意', '非常满意']
+        }
+      ],
+      creator: '市场部',
+      createTime: '2024-03-15 10:30:00',
+      updateTime: '2024-03-20 14:20:00',
+      status: 'active',
+      responseCount: 1256
+    },
+    {
+      id: 'ST002',
+      name: '品牌认知度调查',
+      category: '品牌研究',
+      description: '评估品牌在目标市场中的认知度和形象',
+      targetAudience: '目标消费群体',
+      estimatedTime: 6,
+      questions: [
+        {
+          id: 'Q004',
+          type: 'single',
+          title: '您是否听说过我们的品牌？',
+          required: true,
+          options: [
+            { id: 'O011', text: '是', value: 'yes' },
+            { id: 'O012', text: '否', value: 'no' }
+          ]
+        },
+        {
+          id: 'Q005',
+          type: 'scale',
+          title: '您对我们品牌的整体印象如何？',
+          required: true,
+          scaleMin: 1,
+          scaleMax: 10,
+          scaleLabels: ['非常差', '非常好']
+        }
+      ],
+      creator: '品牌部',
+      createTime: '2024-03-18 09:15:00',
+      updateTime: '2024-03-25 16:45:00',
+      status: 'active',
+      responseCount: 892
+    },
+    {
+      id: 'ST003',
+      name: '产品满意度评估',
+      category: '产品研究',
+      description: '收集用户对产品各方面的满意度反馈',
+      targetAudience: '现有用户',
+      estimatedTime: 10,
+      questions: [
+        {
+          id: 'Q006',
+          type: 'scale',
+          title: '您对产品口感的满意度？',
+          required: true,
+          scaleMin: 1,
+          scaleMax: 5,
+          scaleLabels: ['很差', '差', '一般', '好', '很好']
+        },
+        {
+          id: 'Q007',
+          type: 'text',
+          title: '您对产品有什么改进建议？',
+          required: false
+        }
+      ],
+      creator: '产品部',
+      createTime: '2024-03-20 14:30:00',
+      updateTime: '2024-03-28 11:20:00',
+      status: 'active',
+      responseCount: 567
+    },
+    {
+      id: 'ST004',
+      name: '新产品概念测试',
+      category: '产品研究',
+      description: '测试新产品概念在市场中的接受度',
+      targetAudience: '潜在消费者',
+      estimatedTime: 12,
+      questions: [
+        {
+          id: 'Q008',
+          type: 'single',
+          title: '您对这个新产品概念的第一印象是？',
+          required: true,
+          options: [
+            { id: 'O013', text: '非常感兴趣', value: 'very_interested' },
+            { id: 'O014', text: '有些感兴趣', value: 'somewhat_interested' },
+            { id: 'O015', text: '不太感兴趣', value: 'not_interested' },
+            { id: 'O016', text: '完全不感兴趣', value: 'not_at_all' }
+          ]
+        }
+      ],
+      creator: '研发部',
+      createTime: '2024-03-22 16:20:00',
+      updateTime: '2024-03-30 09:15:00',
+      status: 'draft',
+      responseCount: 0
+    },
+    {
+      id: 'ST005',
+      name: '价格敏感度分析',
+      category: '定价研究',
+      description: '分析消费者对不同价格点的接受度',
+      targetAudience: '目标消费群体',
+      estimatedTime: 7,
+      questions: [
+        {
+          id: 'Q009',
+          type: 'single',
+          title: '您认为合理的价格区间是？',
+          required: true,
+          options: [
+            { id: 'O017', text: '10-15元', value: '10-15' },
+            { id: 'O018', text: '16-20元', value: '16-20' },
+            { id: 'O019', text: '21-25元', value: '21-25' },
+            { id: 'O020', text: '26-30元', value: '26-30' }
+          ]
+        }
+      ],
+      creator: '市场部',
+      createTime: '2024-03-25 13:45:00',
+      updateTime: '2024-03-28 10:30:00',
+      status: 'active',
+      responseCount: 734
+    },
+    {
+      id: 'ST006',
+      name: '渠道偏好调研',
+      category: '渠道研究',
+      description: '了解消费者的购买渠道偏好',
+      targetAudience: '所有消费者',
+      estimatedTime: 5,
+      questions: [
+        {
+          id: 'Q010',
+          type: 'multiple',
+          title: '您通常在哪里购买卷烟？（可多选）',
+          required: true,
+          options: [
+            { id: 'O021', text: '便利店', value: 'convenience' },
+            { id: 'O022', text: '超市', value: 'supermarket' },
+            { id: 'O023', text: '专卖店', value: 'specialty' },
+            { id: 'O024', text: '在线平台', value: 'online' }
+          ]
+        }
+      ],
+      creator: '销售部',
+      createTime: '2024-03-28 09:20:00',
+      updateTime: '2024-03-30 14:50:00',
+      status: 'active',
+      responseCount: 445
+    },
+    {
+      id: 'ST007',
+      name: '广告效果评估',
+      category: '营销研究',
+      description: '评估广告活动的效果和影响',
+      targetAudience: '目标受众',
+      estimatedTime: 9,
+      questions: [
+        {
+          id: 'Q011',
+          type: 'single',
+          title: '您是否看过我们最近的广告？',
+          required: true,
+          options: [
+            { id: 'O025', text: '是', value: 'yes' },
+            { id: 'O026', text: '否', value: 'no' }
+          ]
+        },
+        {
+          id: 'Q012',
+          type: 'scale',
+          title: '广告对您的购买意愿有多大影响？',
+          required: true,
+          scaleMin: 1,
+          scaleMax: 5,
+          scaleLabels: ['无影响', '影响很大']
+        }
+      ],
+      creator: '营销部',
+      createTime: '2024-03-12 11:30:00',
+      updateTime: '2024-03-26 15:45:00',
+      status: 'active',
+      responseCount: 623
+    },
+    {
+      id: 'ST008',
+      name: '竞品对比分析',
+      category: '竞争研究',
+      description: '了解消费者对竞品的认知和偏好',
+      targetAudience: '市场用户',
+      estimatedTime: 11,
+      questions: [
+        {
+          id: 'Q013',
+          type: 'multiple',
+          title: '您还使用过哪些品牌的产品？',
+          required: true,
+          options: [
+            { id: 'O027', text: '品牌A', value: 'brand_a' },
+            { id: 'O028', text: '品牌B', value: 'brand_b' },
+            { id: 'O029', text: '品牌C', value: 'brand_c' }
+          ]
+        }
+      ],
+      creator: '战略部',
+      createTime: '2024-03-10 15:20:00',
+      updateTime: '2024-03-24 12:30:00',
+      status: 'active',
+      responseCount: 389
+    },
+    {
+      id: 'ST009',
+      name: '用户体验调研',
+      category: '体验研究',
+      description: '深入了解用户的使用体验和感受',
+      targetAudience: '活跃用户',
+      estimatedTime: 15,
+      questions: [
+        {
+          id: 'Q014',
+          type: 'text',
+          title: '请描述您使用产品时的整体感受',
+          required: true
+        },
+        {
+          id: 'Q015',
+          type: 'scale',
+          title: '您向朋友推荐我们产品的可能性有多大？',
+          required: true,
+          scaleMin: 0,
+          scaleMax: 10,
+          scaleLabels: ['完全不可能', '非常可能']
+        }
+      ],
+      creator: '用户研究',
+      createTime: '2024-03-08 08:45:00',
+      updateTime: '2024-03-22 17:20:00',
+      status: 'active',
+      responseCount: 234
+    },
+    {
+      id: 'ST010',
+      name: '季节性需求调研',
+      category: '需求研究',
+      description: '分析不同季节的消费需求变化',
+      targetAudience: '全体消费者',
+      estimatedTime: 6,
+      questions: [
+        {
+          id: 'Q016',
+          type: 'single',
+          title: '您在哪个季节的消费量最大？',
+          required: true,
+          options: [
+            { id: 'O030', text: '春季', value: 'spring' },
+            { id: 'O031', text: '夏季', value: 'summer' },
+            { id: 'O032', text: '秋季', value: 'autumn' },
+            { id: 'O033', text: '冬季', value: 'winter' }
+          ]
+        }
+      ],
+      creator: '市场部',
+      createTime: '2024-03-05 14:15:00',
+      updateTime: '2024-03-20 09:30:00',
+      status: 'archived',
+      responseCount: 1123
+    }
+  ]
+
   return (
     <div>
       <div className="page-header">
@@ -298,15 +686,422 @@ const MarketInsight: React.FC = () => {
           </Card>
         </TabPane>
 
-        <TabPane tab="调研问卷生成" key="survey-generation" icon={<FileTextOutlined />}>
-          <Card title="智能问卷生成器">
-            <p>基于消费群体画像，自动生成结构化调研问卷...</p>
-            <Button type="primary" disabled>
-              功能开发中
-            </Button>
+        <TabPane tab="调研问卷" key="survey-generation" icon={<FormOutlined />}>
+          <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+            <Col xs={24} sm={6}>
+              <Card>
+                <Statistic
+                  title="问卷模板"
+                  value={surveyTemplates.length}
+                  prefix={<FormOutlined />}
+                  valueStyle={{ color: '#1890ff' }}
+                />
+              </Card>
+            </Col>
+            <Col xs={24} sm={6}>
+              <Card>
+                <Statistic
+                  title="活跃问卷"
+                  value={surveyTemplates.filter(s => s.status === 'active').length}
+                  prefix={<SendOutlined />}
+                  valueStyle={{ color: '#52c41a' }}
+                />
+              </Card>
+            </Col>
+            <Col xs={24} sm={6}>
+              <Card>
+                <Statistic
+                  title="总回收量"
+                  value={surveyTemplates.reduce((sum, s) => sum + s.responseCount, 0)}
+                  prefix={<UserOutlined />}
+                  valueStyle={{ color: '#faad14' }}
+                />
+              </Card>
+            </Col>
+            <Col xs={24} sm={6}>
+              <Card>
+                <Statistic
+                  title="平均完成时间"
+                  value={Math.round(surveyTemplates.reduce((sum, s) => sum + s.estimatedTime, 0) / surveyTemplates.length)}
+                  suffix="分钟"
+                  prefix={<BarChartOutlined />}
+                  valueStyle={{ color: '#722ed1' }}
+                />
+              </Card>
+            </Col>
+          </Row>
+
+          <Card
+            title="问卷模板管理"
+            extra={
+              <Space>
+                <Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={() => {
+                    setSurveyModalType('create')
+                    setSelectedSurvey(null)
+                    setSurveyModalVisible(true)
+                  }}
+                >
+                  创建问卷
+                </Button>
+                <Button icon={<BarChartOutlined />}>
+                  智能生成
+                </Button>
+              </Space>
+            }
+          >
+            <Space style={{ marginBottom: 16 }}>
+              <Input.Search
+                placeholder="搜索问卷名称或描述"
+                allowClear
+                style={{ width: 300 }}
+              />
+              <Select
+                placeholder="选择类别"
+                style={{ width: 150 }}
+                allowClear
+              >
+                <Option value="消费者研究">消费者研究</Option>
+                <Option value="品牌研究">品牌研究</Option>
+                <Option value="产品研究">产品研究</Option>
+                <Option value="定价研究">定价研究</Option>
+                <Option value="渠道研究">渠道研究</Option>
+                <Option value="营销研究">营销研究</Option>
+                <Option value="竞争研究">竞争研究</Option>
+                <Option value="体验研究">体验研究</Option>
+                <Option value="需求研究">需求研究</Option>
+              </Select>
+              <Select
+                placeholder="状态"
+                style={{ width: 120 }}
+                allowClear
+              >
+                <Option value="draft">草稿</Option>
+                <Option value="active">活跃</Option>
+                <Option value="archived">已归档</Option>
+              </Select>
+            </Space>
+
+            <Table
+              columns={[
+                {
+                  title: '问卷名称',
+                  dataIndex: 'name',
+                  key: 'name',
+                  render: (text: string) => <a>{text}</a>
+                },
+                {
+                  title: '类别',
+                  dataIndex: 'category',
+                  key: 'category',
+                  render: (category: string) => <Tag color="blue">{category}</Tag>
+                },
+                {
+                  title: '目标受众',
+                  dataIndex: 'targetAudience',
+                  key: 'targetAudience'
+                },
+                {
+                  title: '预估时间',
+                  dataIndex: 'estimatedTime',
+                  key: 'estimatedTime',
+                  render: (time: number) => `${time}分钟`
+                },
+                {
+                  title: '状态',
+                  dataIndex: 'status',
+                  key: 'status',
+                  render: (status: string) => {
+                    const colors = { draft: 'orange', active: 'green', archived: 'gray' }
+                    const names = { draft: '草稿', active: '活跃', archived: '已归档' }
+                    return <Tag color={colors[status as keyof typeof colors]}>{names[status as keyof typeof names]}</Tag>
+                  }
+                },
+                {
+                  title: '回收量',
+                  dataIndex: 'responseCount',
+                  key: 'responseCount',
+                  render: (count: number) => count.toLocaleString()
+                },
+                {
+                  title: '创建人',
+                  dataIndex: 'creator',
+                  key: 'creator'
+                },
+                {
+                  title: '更新时间',
+                  dataIndex: 'updateTime',
+                  key: 'updateTime'
+                },
+                {
+                  title: '操作',
+                  key: 'action',
+                  render: (record: SurveyTemplate) => (
+                    <Space size="middle">
+                      <Button
+                        type="link"
+                        icon={<EyeOutlined />}
+                        size="small"
+                        onClick={() => {
+                          setSelectedSurvey(record)
+                          setSurveyModalType('view')
+                          setSurveyModalVisible(true)
+                        }}
+                      >
+                        查看
+                      </Button>
+                      <Button
+                        type="link"
+                        icon={<EditOutlined />}
+                        size="small"
+                        onClick={() => {
+                          setSelectedSurvey(record)
+                          setSurveyModalType('edit')
+                          setSurveyModalVisible(true)
+                        }}
+                      >
+                        编辑
+                      </Button>
+                      <Button
+                        type="link"
+                        icon={<SendOutlined />}
+                        size="small"
+                        disabled={record.status !== 'active'}
+                      >
+                        发布
+                      </Button>
+                      <Button
+                        type="link"
+                        icon={<BarChartOutlined />}
+                        size="small"
+                        onClick={() => {
+                          setSelectedSurvey(record)
+                          setAnalysisModalVisible(true)
+                        }}
+                        disabled={record.responseCount === 0}
+                      >
+                        分析
+                      </Button>
+                      <Button
+                        type="link"
+                        icon={<CopyOutlined />}
+                        size="small"
+                      >
+                        复制
+                      </Button>
+                    </Space>
+                  )
+                }
+              ]}
+              dataSource={surveyTemplates}
+              rowKey="id"
+              pagination={{
+                total: surveyTemplates.length,
+                pageSize: 10,
+                showSizeChanger: true,
+                showQuickJumper: true,
+                showTotal: (total, range) => `第 ${range[0]}-${range[1]} 条，共 ${total} 条`
+              }}
+            />
           </Card>
         </TabPane>
       </Tabs>
+
+      {/* 问卷创建/编辑模态框 */}
+      <Modal
+        title={
+          surveyModalType === 'create' ? '创建问卷' :
+          surveyModalType === 'edit' ? '编辑问卷' : '问卷详情'
+        }
+        open={surveyModalVisible}
+        onCancel={() => setSurveyModalVisible(false)}
+        width={800}
+        footer={surveyModalType === 'view' ? [
+          <Button key="close" onClick={() => setSurveyModalVisible(false)}>
+            关闭
+          </Button>
+        ] : [
+          <Button key="cancel" onClick={() => setSurveyModalVisible(false)}>
+            取消
+          </Button>,
+          <Button key="submit" type="primary">
+            {surveyModalType === 'create' ? '创建' : '保存'}
+          </Button>
+        ]}
+      >
+        <Form layout="vertical">
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item label="问卷名称">
+                <Input
+                  placeholder="请输入问卷名称"
+                  defaultValue={selectedSurvey?.name}
+                  disabled={surveyModalType === 'view'}
+                />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item label="问卷类别">
+                <Select
+                  placeholder="请选择问卷类别"
+                  defaultValue={selectedSurvey?.category}
+                  disabled={surveyModalType === 'view'}
+                >
+                  <Option value="消费者研究">消费者研究</Option>
+                  <Option value="品牌研究">品牌研究</Option>
+                  <Option value="产品研究">产品研究</Option>
+                  <Option value="定价研究">定价研究</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item label="目标受众">
+                <Input
+                  placeholder="请输入目标受众"
+                  defaultValue={selectedSurvey?.targetAudience}
+                  disabled={surveyModalType === 'view'}
+                />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item label="预估时间(分钟)">
+                <Input
+                  type="number"
+                  placeholder="请输入预估时间"
+                  defaultValue={selectedSurvey?.estimatedTime}
+                  disabled={surveyModalType === 'view'}
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Form.Item label="问卷描述">
+            <TextArea
+              rows={3}
+              placeholder="请输入问卷描述"
+              defaultValue={selectedSurvey?.description}
+              disabled={surveyModalType === 'view'}
+            />
+          </Form.Item>
+
+          {surveyModalType !== 'view' && (
+            <Form.Item label="题目设计">
+              <Card size="small" style={{ background: '#fafafa' }}>
+                <Space direction="vertical" style={{ width: '100%' }}>
+                  <Button type="dashed" icon={<PlusOutlined />} block>
+                    添加单选题
+                  </Button>
+                  <Button type="dashed" icon={<PlusOutlined />} block>
+                    添加多选题
+                  </Button>
+                  <Button type="dashed" icon={<PlusOutlined />} block>
+                    添加量表题
+                  </Button>
+                  <Button type="dashed" icon={<PlusOutlined />} block>
+                    添加开放题
+                  </Button>
+                </Space>
+              </Card>
+            </Form.Item>
+          )}
+
+          {selectedSurvey && selectedSurvey.questions.length > 0 && (
+            <Form.Item label="问卷预览">
+              <Card size="small">
+                {selectedSurvey.questions.map((question, index) => (
+                  <div key={question.id} style={{ marginBottom: 16 }}>
+                    <div style={{ fontWeight: 'bold', marginBottom: 8 }}>
+                      {index + 1}. {question.title}
+                      {question.required && <span style={{ color: 'red' }}> *</span>}
+                    </div>
+                    {question.type === 'single' && question.options && (
+                      <Radio.Group disabled>
+                        <Space direction="vertical">
+                          {question.options.map(option => (
+                            <Radio key={option.id} value={option.value}>
+                              {option.text}
+                            </Radio>
+                          ))}
+                        </Space>
+                      </Radio.Group>
+                    )}
+                    {question.type === 'multiple' && question.options && (
+                      <Checkbox.Group disabled>
+                        <Space direction="vertical">
+                          {question.options.map(option => (
+                            <Checkbox key={option.id} value={option.value}>
+                              {option.text}
+                            </Checkbox>
+                          ))}
+                        </Space>
+                      </Checkbox.Group>
+                    )}
+                    {question.type === 'scale' && (
+                      <div>
+                        <Rate disabled count={question.scaleMax} />
+                        {question.scaleLabels && (
+                          <div style={{ marginTop: 4, fontSize: 12, color: '#666' }}>
+                            {question.scaleLabels[0]} - {question.scaleLabels[question.scaleLabels.length - 1]}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {question.type === 'text' && (
+                      <TextArea rows={3} disabled placeholder="请输入您的回答..." />
+                    )}
+                    {index < selectedSurvey.questions.length - 1 && <Divider />}
+                  </div>
+                ))}
+              </Card>
+            </Form.Item>
+          )}
+        </Form>
+      </Modal>
+
+      {/* 问卷分析模态框 */}
+      <Modal
+        title="问卷分析结果"
+        open={analysisModalVisible}
+        onCancel={() => setAnalysisModalVisible(false)}
+        width={1000}
+        footer={[
+          <Button key="export" icon={<DownloadOutlined />}>
+            导出报告
+          </Button>,
+          <Button key="close" onClick={() => setAnalysisModalVisible(false)}>
+            关闭
+          </Button>
+        ]}
+      >
+        {selectedSurvey && (
+          <div>
+            <Row gutter={16} style={{ marginBottom: 24 }}>
+              <Col span={6}>
+                <Statistic title="总回收量" value={selectedSurvey.responseCount} />
+              </Col>
+              <Col span={6}>
+                <Statistic title="完成率" value={85.6} suffix="%" />
+              </Col>
+              <Col span={6}>
+                <Statistic title="平均用时" value={selectedSurvey.estimatedTime - 1} suffix="分钟" />
+              </Col>
+              <Col span={6}>
+                <Statistic title="满意度" value={4.2} suffix="/5.0" />
+              </Col>
+            </Row>
+
+            <Card title="题目分析" size="small">
+              <p>详细的题目分析结果将在此显示...</p>
+              <div style={{ height: 200, background: '#fafafa', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <span style={{ color: '#999' }}>图表分析区域</span>
+              </div>
+            </Card>
+          </div>
+        )}
+      </Modal>
     </div>
   )
 }

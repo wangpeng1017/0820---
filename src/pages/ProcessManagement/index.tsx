@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Card, Table, Button, Input, Select, Space, Tag, Modal, Form, InputNumber, Tabs, Row, Col, Statistic, Progress } from 'antd'
+import { Card, Table, Button, Input, Select, Space, Tag, Modal, Form, InputNumber, Tabs, Row, Col, Statistic, Progress, Alert, Slider, Divider } from 'antd'
 import {
   PlusOutlined,
   EditOutlined,
@@ -9,7 +9,11 @@ import {
   PlayCircleOutlined,
   CheckCircleOutlined,
   WarningOutlined,
-  LineChartOutlined
+  LineChartOutlined,
+  ExperimentOutlined,
+  RocketOutlined,
+  ThunderboltOutlined,
+  BarChartOutlined
 } from '@ant-design/icons'
 
 const { Search } = Input
@@ -858,6 +862,184 @@ const ProcessManagement: React.FC = () => {
               }}
             />
           </Card>
+        </TabPane>
+
+        <TabPane tab="工艺仿真" key="simulation" icon={<ExperimentOutlined />}>
+          <Row gutter={[16, 16]}>
+            <Col xs={24} lg={8}>
+              <Card title="制丝工艺仿真" size="small">
+                <Space direction="vertical" style={{ width: '100%' }}>
+                  <Alert
+                    message="制丝工艺参数仿真"
+                    description="基于物理模型预测工艺参数对产品质量的影响"
+                    type="info"
+                    size="small"
+                    showIcon
+                  />
+
+                  <Form layout="vertical" size="small">
+                    <Form.Item label="切丝宽度(mm)">
+                      <Slider
+                        range
+                        min={0.5}
+                        max={1.2}
+                        step={0.1}
+                        defaultValue={[0.7, 0.9]}
+                        marks={{ 0.5: '0.5', 0.9: '0.9', 1.2: '1.2' }}
+                      />
+                    </Form.Item>
+
+                    <Form.Item label="烘丝温度(°C)">
+                      <Slider
+                        min={60}
+                        max={120}
+                        defaultValue={85}
+                        marks={{ 60: '60', 85: '85', 120: '120' }}
+                      />
+                    </Form.Item>
+
+                    <Form.Item label="烘丝水分(%)">
+                      <Slider
+                        min={10}
+                        max={16}
+                        step={0.5}
+                        defaultValue={13}
+                        marks={{ 10: '10', 13: '13', 16: '16' }}
+                      />
+                    </Form.Item>
+
+                    <Form.Item label="加料量(%)">
+                      <Slider
+                        min={8}
+                        max={15}
+                        step={0.5}
+                        defaultValue={12}
+                        marks={{ 8: '8', 12: '12', 15: '15' }}
+                      />
+                    </Form.Item>
+                  </Form>
+
+                  <Button type="primary" icon={<RocketOutlined />} block>
+                    开始制丝仿真
+                  </Button>
+                </Space>
+              </Card>
+            </Col>
+
+            <Col xs={24} lg={8}>
+              <Card title="卷接包工艺仿真" size="small">
+                <Space direction="vertical" style={{ width: '100%' }}>
+                  <Alert
+                    message="卷接包工艺参数仿真"
+                    description="优化卷接包工艺参数，提升产品质量稳定性"
+                    type="info"
+                    size="small"
+                    showIcon
+                  />
+
+                  <Form layout="vertical" size="small">
+                    <Form.Item label="卷制密度(mg/cm³)">
+                      <Slider
+                        min={200}
+                        max={300}
+                        defaultValue={250}
+                        marks={{ 200: '200', 250: '250', 300: '300' }}
+                      />
+                    </Form.Item>
+
+                    <Form.Item label="卷制速度(支/分)">
+                      <Slider
+                        min={6000}
+                        max={12000}
+                        step={500}
+                        defaultValue={8000}
+                        marks={{ 6000: '6K', 8000: '8K', 12000: '12K' }}
+                      />
+                    </Form.Item>
+
+                    <Form.Item label="接装纸胶量(g/m²)">
+                      <Slider
+                        min={8}
+                        max={15}
+                        step={0.5}
+                        defaultValue={12}
+                        marks={{ 8: '8', 12: '12', 15: '15' }}
+                      />
+                    </Form.Item>
+
+                    <Form.Item label="包装压力(N)">
+                      <Slider
+                        min={50}
+                        max={150}
+                        step={10}
+                        defaultValue={100}
+                        marks={{ 50: '50', 100: '100', 150: '150' }}
+                      />
+                    </Form.Item>
+                  </Form>
+
+                  <Button type="primary" icon={<RocketOutlined />} block>
+                    开始卷接包仿真
+                  </Button>
+                </Space>
+              </Card>
+            </Col>
+
+            <Col xs={24} lg={8}>
+              <Card title="仿真结果预测" size="small">
+                <Space direction="vertical" style={{ width: '100%' }}>
+                  <div>
+                    <div style={{ fontWeight: 'bold', marginBottom: 8 }}>质量指标预测</div>
+                    <div style={{ marginBottom: 4 }}>
+                      <span>硬度: </span>
+                      <span style={{ color: '#52c41a' }}>85±3</span>
+                    </div>
+                    <div style={{ marginBottom: 4 }}>
+                      <span>圆周: </span>
+                      <span style={{ color: '#52c41a' }}>24.8±0.2mm</span>
+                    </div>
+                    <div style={{ marginBottom: 4 }}>
+                      <span>重量: </span>
+                      <span style={{ color: '#faad14' }}>0.95±0.05g</span>
+                    </div>
+                    <div style={{ marginBottom: 4 }}>
+                      <span>抽吸阻力: </span>
+                      <span style={{ color: '#52c41a' }}>1050±50Pa</span>
+                    </div>
+                  </div>
+
+                  <Divider style={{ margin: '12px 0' }} />
+
+                  <div>
+                    <div style={{ fontWeight: 'bold', marginBottom: 8 }}>风格质量影响</div>
+                    <div style={{ marginBottom: 8 }}>
+                      <span>香气浓度: </span>
+                      <Progress percent={88} size="small" />
+                    </div>
+                    <div style={{ marginBottom: 8 }}>
+                      <span>口感协调性: </span>
+                      <Progress percent={92} size="small" strokeColor="#faad14" />
+                    </div>
+                    <div style={{ marginBottom: 8 }}>
+                      <span>燃烧性能: </span>
+                      <Progress percent={85} size="small" strokeColor="#722ed1" />
+                    </div>
+                    <div style={{ marginBottom: 8 }}>
+                      <span>外观质量: </span>
+                      <Progress percent={90} size="small" strokeColor="#13c2c2" />
+                    </div>
+                  </div>
+
+                  <Alert
+                    message="仿真完成"
+                    description="工艺参数优化建议已生成"
+                    type="success"
+                    size="small"
+                  />
+                </Space>
+              </Card>
+            </Col>
+          </Row>
         </TabPane>
       </Tabs>
 
