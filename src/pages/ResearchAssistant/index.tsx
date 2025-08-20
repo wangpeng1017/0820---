@@ -190,7 +190,7 @@ const ResearchAssistant: React.FC = () => {
                           </Paragraph>
                           <Space wrap>
                             {item.tags.map(tag => (
-                              <Tag key={tag} size="small">{tag}</Tag>
+                              <Tag key={tag}>{tag}</Tag>
                             ))}
                           </Space>
                           <div style={{ fontSize: 12, color: '#999', marginTop: 4 }}>

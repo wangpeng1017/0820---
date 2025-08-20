@@ -131,12 +131,10 @@ Mock.mock('/api/market-insights', 'get', () => {
 })
 
 // 用户权限检查
-Mock.mock('/api/auth/check-permission', 'post', (options) => {
-  const { permission } = JSON.parse(options.body)
-  
+Mock.mock('/api/auth/check-permission', 'post', () => {
   // 模拟权限检查逻辑
   const hasPermission = Math.random() > 0.2 // 80%概率有权限
-  
+
   return {
     success: true,
     data: { hasPermission },

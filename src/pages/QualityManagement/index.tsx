@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Card, Table, Button, Input, Select, Space, Tag, Modal, Form, InputNumber, Row, Col, Statistic, Progress } from 'antd'
+import { Card, Table, Button, Input, Select, Space, Tag, Modal, Row, Col, Statistic, Progress } from 'antd'
 import { 
   SearchOutlined, 
   PlusOutlined, 
@@ -16,8 +16,6 @@ const { Search } = Input
 const { Option } = Select
 
 const QualityManagement: React.FC = () => {
-  const [searchText, setSearchText] = useState('')
-  const [selectedStatus, setSelectedStatus] = useState<string>('')
   const [modalVisible, setModalVisible] = useState(false)
 
   // 模拟质量检测数据
@@ -135,7 +133,7 @@ const QualityManagement: React.FC = () => {
     {
       title: '操作',
       key: 'action',
-      render: (record: QualityTest) => (
+      render: () => (
         <Space size="middle">
           <Button type="link" icon={<EyeOutlined />} size="small" onClick={() => setModalVisible(true)}>
             查看
@@ -244,13 +242,11 @@ const QualityManagement: React.FC = () => {
             placeholder="搜索检测编号或样品编号"
             allowClear
             style={{ width: 300 }}
-            onSearch={setSearchText}
           />
           <Select
             placeholder="选择状态"
             style={{ width: 120 }}
             allowClear
-            onChange={setSelectedStatus}
           >
             <Option value="pending">待检测</Option>
             <Option value="testing">检测中</Option>

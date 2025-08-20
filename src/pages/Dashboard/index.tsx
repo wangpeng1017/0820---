@@ -1,12 +1,11 @@
 import React from 'react'
 import { Row, Col, Card, Statistic, Progress, Timeline, Table, Tag, Space, Button } from 'antd'
-import { 
-  ProjectOutlined, 
-  ExperimentOutlined, 
-  CheckCircleOutlined, 
+import {
+  ProjectOutlined,
+  ExperimentOutlined,
+  CheckCircleOutlined,
   ClockCircleOutlined,
   ArrowUpOutlined,
-  ArrowDownOutlined,
   EyeOutlined
 } from '@ant-design/icons'
 import { PROJECT_STATUS_COLORS, PROJECT_STATUS_NAMES } from '../../constants'

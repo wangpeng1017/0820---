@@ -5,18 +5,15 @@ import {
   MenuUnfoldOutlined,
   BellOutlined,
   UserOutlined,
-  LogoutOutlined,
   SettingOutlined,
   DashboardOutlined,
   ExperimentOutlined,
   BarChartOutlined,
   FileTextOutlined,
-  TeamOutlined,
   ToolOutlined,
   SafetyOutlined,
   BulbOutlined,
   DatabaseOutlined,
-  AppstoreOutlined,
   RobotOutlined
 } from '@ant-design/icons'
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom'

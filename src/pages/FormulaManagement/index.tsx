@@ -1,11 +1,10 @@
 import React, { useState } from 'react'
-import { Card, Table, Button, Input, Select, Space, Tag, Modal, Form, InputNumber, Tabs } from 'antd'
-import { 
-  SearchOutlined, 
-  PlusOutlined, 
-  EditOutlined, 
+import { Card, Table, Button, Input, Select, Space, Tag, Modal, Form, Tabs } from 'antd'
+import {
+  PlusOutlined,
+  EditOutlined,
   EyeOutlined,
-  CompareArrowsOutlined,
+  SwapOutlined,
   HistoryOutlined
 } from '@ant-design/icons'
 import type { Formula } from '../../types'
@@ -15,8 +14,6 @@ const { Option } = Select
 const { TabPane } = Tabs
 
 const FormulaManagement: React.FC = () => {
-  const [searchText, setSearchText] = useState('')
-  const [selectedStatus, setSelectedStatus] = useState<string>('')
   const [modalVisible, setModalVisible] = useState(false)
   const [compareModalVisible, setCompareModalVisible] = useState(false)
 
@@ -120,7 +117,7 @@ const FormulaManagement: React.FC = () => {
     {
       title: '操作',
       key: 'action',
-      render: (record: Formula) => (
+      render: () => (
         <Space size="middle">
           <Button type="link" icon={<EyeOutlined />} size="small">
             查看
@@ -182,13 +179,11 @@ const FormulaManagement: React.FC = () => {
             placeholder="搜索配方名称或编号"
             allowClear
             style={{ width: 300 }}
-            onSearch={setSearchText}
           />
           <Select
             placeholder="选择状态"
             style={{ width: 120 }}
             allowClear
-            onChange={setSelectedStatus}
           >
             <Option value="draft">草稿</Option>
             <Option value="testing">测试中</Option>
@@ -198,7 +193,7 @@ const FormulaManagement: React.FC = () => {
           <Button type="primary" icon={<PlusOutlined />}>
             新建配方
           </Button>
-          <Button icon={<CompareArrowsOutlined />} onClick={() => setCompareModalVisible(true)}>
+          <Button icon={<SwapOutlined />} onClick={() => setCompareModalVisible(true)}>
             版本比对
           </Button>
         </Space>

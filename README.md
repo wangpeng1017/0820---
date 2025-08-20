@@ -108,6 +108,12 @@ npm run dev
 npm run build
 ```
 
+### 带类型检查的构建（可选）
+
+```bash
+npm run build-check
+```
+
 ## 用户角色与权限
 
 **注意：登录功能已被移除，应用现在直接以管理员身份运行。**

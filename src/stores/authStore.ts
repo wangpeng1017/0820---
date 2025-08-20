@@ -17,7 +17,8 @@ interface AuthState {
   setUser: (user: User) => void
 }
 
-// 模拟用户数据
+// 模拟用户数据（已禁用，保留用于参考）
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const mockUsers: Record<string, { password: string; user: User }> = {
   'admin': {
     password: '123456',
