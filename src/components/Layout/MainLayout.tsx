@@ -47,14 +47,18 @@ const MainLayout: React.FC = () => {
   const navigate = useNavigate()
   const location = useLocation()
 
-  // 菜单配置
+  // 菜单配置 - 重新组织为两大平台
   const menuItems = [
     {
       key: MODULES.DASHBOARD,
       icon: <DashboardOutlined />,
       label: MODULE_NAMES[MODULES.DASHBOARD],
       path: '/dashboard'
-    },
+    }
+  ]
+
+  // 数字化研发业务管理平台菜单项 (Epic 1.0-11.0)
+  const businessPlatformItems = [
     {
       key: MODULES.MARKET_INSIGHT,
       icon: <BarChartOutlined />,
@@ -80,10 +84,22 @@ const MainLayout: React.FC = () => {
       path: '/flavor-management'
     },
     {
+      key: 'auxiliary-material-management',
+      icon: <SettingOutlined />,
+      label: '材料管理(烟用辅材)',
+      path: '/auxiliary-material-management'
+    },
+    {
       key: MODULES.PROCESS_MANAGEMENT,
       icon: <ToolOutlined />,
       label: MODULE_NAMES[MODULES.PROCESS_MANAGEMENT],
       path: '/process-management'
+    },
+    {
+      key: 'online-experiment',
+      icon: <ExperimentOutlined />,
+      label: '在线试验管理',
+      path: '/online-experiment'
     },
     {
       key: MODULES.QUALITY_MANAGEMENT,
@@ -98,11 +114,21 @@ const MainLayout: React.FC = () => {
       path: '/lims'
     },
     {
+      key: 'comprehensive-management',
+      icon: <SettingOutlined />,
+      label: '综合管理',
+      path: '/comprehensive-management'
+    },
+    {
       key: MODULES.RESEARCH_ASSISTANT,
       icon: <RobotOutlined />,
       label: MODULE_NAMES[MODULES.RESEARCH_ASSISTANT],
       path: '/research-assistant'
-    },
+    }
+  ]
+
+  // 数字化研发设计平台菜单项 (Epic 12.0-19.0)
+  const designPlatformItems = [
     {
       key: 'design-dashboard',
       icon: <DashboardOutlined />,
@@ -114,6 +140,18 @@ const MainLayout: React.FC = () => {
       icon: <BulbOutlined />,
       label: '设计策划数字化',
       path: '/design-planning'
+    },
+    {
+      key: 'formula-design',
+      icon: <ExperimentOutlined />,
+      label: '叶组配方数字化设计',
+      path: '/formula-management'
+    },
+    {
+      key: 'flavor-design',
+      icon: <BulbOutlined />,
+      label: '香精香料数字化设计',
+      path: '/flavor-management'
     },
     {
       key: 'auxiliary-material-design',
@@ -128,30 +166,21 @@ const MainLayout: React.FC = () => {
       path: '/packaging-design'
     },
     {
+      key: 'process-design',
+      icon: <ToolOutlined />,
+      label: '加工工艺数字化设计',
+      path: '/process-management'
+    },
+    {
       key: 'report-generation',
       icon: <FileTextOutlined />,
       label: '定型与输出数字化',
       path: '/report-generation'
-    },
-    {
-      key: 'auxiliary-material-management',
-      icon: <SettingOutlined />,
-      label: '材料管理(烟用辅材)',
-      path: '/auxiliary-material-management'
-    },
-    {
-      key: 'online-experiment',
-      icon: <ExperimentOutlined />,
-      label: '在线试验管理',
-      path: '/online-experiment'
-    },
-    {
-      key: 'comprehensive-management',
-      icon: <SettingOutlined />,
-      label: '综合管理',
-      path: '/comprehensive-management'
     }
   ]
+
+  // 合并所有菜单项用于路由匹配
+  const allMenuItems = [...menuItems, ...businessPlatformItems, ...designPlatformItems]
 
   // 用户下拉菜单（移除登出功能）
   const userMenuItems = [
@@ -168,17 +197,29 @@ const MainLayout: React.FC = () => {
   ]
 
   const handleMenuClick = ({ key }: { key: string }) => {
-    const item = menuItems.find(item => item.key === key)
+    const item = allMenuItems.find(item => item.key === key)
     if (item) {
       navigate(item.path)
     }
   }
 
   // 获取当前选中的菜单项
-  const selectedKey = menuItems.find(item => 
-    location.pathname === item.path || 
+  const selectedKey = allMenuItems.find(item =>
+    location.pathname === item.path ||
     (item.path !== '/dashboard' && location.pathname.startsWith(item.path))
-  )?.key || MODULES.DASHBOARD
+  )?.key
+
+  // 获取当前打开的子菜单
+  const getOpenKeys = () => {
+    const currentPath = location.pathname
+    if (businessPlatformItems.some(item => currentPath === item.path || (item.path !== '/dashboard' && currentPath.startsWith(item.path)))) {
+      return ['business-platform']
+    }
+    if (designPlatformItems.some(item => currentPath === item.path || (item.path !== '/dashboard' && currentPath.startsWith(item.path)))) {
+      return ['design-platform']
+    }
+    return []
+  } || MODULES.DASHBOARD
 
   return (
     <Layout className="main-layout">
@@ -207,12 +248,30 @@ const MainLayout: React.FC = () => {
           theme="light"
           mode="inline"
           selectedKeys={[selectedKey]}
-          items={menuItems}
+          defaultOpenKeys={getOpenKeys()}
           onClick={handleMenuClick}
           style={{
             borderRight: '1px solid #e8e8e8',
             background: '#ffffff'
           }}
+          items={[
+            // Dashboard (standalone)
+            ...menuItems,
+            // Business Management Platform
+            {
+              key: 'business-platform',
+              icon: <SettingOutlined />,
+              label: '数字化研发业务平台',
+              children: businessPlatformItems
+            },
+            // Design Platform
+            {
+              key: 'design-platform',
+              icon: <BulbOutlined />,
+              label: '数字化研发设计平台',
+              children: designPlatformItems
+            }
+          ]}
         />
       </Sider>
       
