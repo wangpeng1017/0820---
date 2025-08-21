@@ -1,9 +1,4 @@
 {
-  "functions": {
-    "server/proxy-server.js": {
-      "maxDuration": 30
-    }
-  },
 
   "headers": [
     {
@@ -25,14 +20,6 @@
     }
   ],
   "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "/server/proxy-server.js"
-    },
-    {
-      "source": "/health",
-      "destination": "/server/proxy-server.js"
-    },
     {
       "source": "/packaging-design",
       "destination": "/index.html"
