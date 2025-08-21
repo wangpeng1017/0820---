@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Card, Tabs, Button, Table, Tag, Space, Row, Col, Statistic, Modal, Form, Input, Select, Upload, Alert, Progress, Divider, ColorPicker, Slider, message, Spin, Timeline } from 'antd'
 import { generateImageFromText, generateImageFromImage, fileToBase64, downloadBase64Image } from '../../services/volcengineApi'
+import ApiConfigGuide from '../../components/ApiConfigGuide'
 import {
   PlusOutlined,
   EditOutlined,
@@ -111,6 +112,7 @@ const PackagingDesign: React.FC = () => {
   const [textPrompt, setTextPrompt] = useState('')
   const [uploadedImage, setUploadedImage] = useState<File | null>(null)
   const [imagePrompt, setImagePrompt] = useState('')
+  const [showConfigGuide, setShowConfigGuide] = useState(false)
 
   // 处理文生图功能
   const handleTextToImage = async () => {
@@ -134,7 +136,14 @@ const PackagingDesign: React.FC = () => {
       message.success('图像生成成功！')
     } catch (error) {
       console.error('文生图失败:', error)
-      message.error('图像生成失败，请稍后重试')
+      const errorMessage = error instanceof Error ? error.message : '图像生成失败，请稍后重试'
+
+      // 如果是API配置错误，显示配置指导
+      if (errorMessage.includes('火山引擎API密钥')) {
+        setShowConfigGuide(true)
+      }
+
+      message.error(errorMessage, 8) // 显示8秒，让用户有时间阅读详细错误信息
     } finally {
       setTextToImageLoading(false)
     }
@@ -170,7 +179,14 @@ const PackagingDesign: React.FC = () => {
       message.success('图像转换成功！')
     } catch (error) {
       console.error('图生图失败:', error)
-      message.error('图像转换失败，请稍后重试')
+      const errorMessage = error instanceof Error ? error.message : '图像转换失败，请稍后重试'
+
+      // 如果是API配置错误，显示配置指导
+      if (errorMessage.includes('火山引擎API密钥')) {
+        setShowConfigGuide(true)
+      }
+
+      message.error(errorMessage, 8) // 显示8秒，让用户有时间阅读详细错误信息
     } finally {
       setImageToImageLoading(false)
     }
@@ -1331,6 +1347,18 @@ const PackagingDesign: React.FC = () => {
             />
           </Form.Item>
         </Form>
+      </Modal>
+
+      {/* API配置指导弹窗 */}
+      <Modal
+        title="API配置指导"
+        open={showConfigGuide}
+        onCancel={() => setShowConfigGuide(false)}
+        footer={null}
+        width={900}
+        centered
+      >
+        <ApiConfigGuide onRetry={() => setShowConfigGuide(false)} />
       </Modal>
     </div>
   )

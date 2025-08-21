@@ -128,7 +128,12 @@ function createHeaders(payload: string): Record<string, string> {
 // 验证API配置
 function validateApiConfig() {
   if (!VOLCENGINE_CONFIG.accessKeyId || !VOLCENGINE_CONFIG.secretAccessKey) {
-    throw new Error('火山引擎API密钥未配置。请在.env文件中设置VITE_VOLCENGINE_ACCESS_KEY_ID和VITE_VOLCENGINE_SECRET_ACCESS_KEY')
+    throw new Error('🔑 火山引擎API密钥未配置\n\n请按以下步骤配置：\n1. 复制.env.example为.env文件\n2. 在.env文件中设置您的API密钥：\n   VITE_VOLCENGINE_ACCESS_KEY_ID=您的AccessKeyId\n   VITE_VOLCENGINE_SECRET_ACCESS_KEY=您的SecretAccessKey\n3. 重启开发服务器')
+  }
+
+  if (VOLCENGINE_CONFIG.accessKeyId === 'your_access_key_id_here' ||
+      VOLCENGINE_CONFIG.secretAccessKey === 'your_secret_access_key_here') {
+    throw new Error('🔑 请使用真实的火山引擎API密钥\n\n当前使用的是示例密钥，请：\n1. 登录火山引擎控制台\n2. 获取您的真实AccessKeyId和SecretAccessKey\n3. 在.env文件中替换示例值')
   }
 }
 
@@ -171,7 +176,19 @@ export async function generateImageFromText(request: TextToImageRequest): Promis
     }
   } catch (error) {
     console.error('Error generating image from text:', error)
-    throw error
+
+    // 提供更友好的错误信息
+    if (error instanceof Error) {
+      if (error.message.includes('火山引擎API密钥')) {
+        throw error // 直接抛出配置错误
+      } else if (error.message.includes('HTTP error')) {
+        throw new Error(`🌐 API调用失败：${error.message}\n\n可能的原因：\n1. 网络连接问题\n2. API密钥无效\n3. 服务暂时不可用\n\n请检查网络连接和API密钥配置`)
+      } else if (error.message.includes('No image generated')) {
+        throw new Error('🎨 图像生成失败\n\n可能的原因：\n1. 文本描述不够清晰\n2. 服务器处理超时\n3. 内容不符合生成要求\n\n请尝试：\n1. 简化或重新描述您的需求\n2. 稍后重试')
+      }
+    }
+
+    throw new Error(`🚫 未知错误：${error}\n\n请联系技术支持或稍后重试`)
   }
 }
 
@@ -216,7 +233,19 @@ export async function generateImageFromImage(request: ImageToImageRequest): Prom
     }
   } catch (error) {
     console.error('Error generating image from image:', error)
-    throw error
+
+    // 提供更友好的错误信息
+    if (error instanceof Error) {
+      if (error.message.includes('火山引擎API密钥')) {
+        throw error // 直接抛出配置错误
+      } else if (error.message.includes('HTTP error')) {
+        throw new Error(`🌐 图生图API调用失败：${error.message}\n\n可能的原因：\n1. 网络连接问题\n2. API密钥无效\n3. 上传的图片格式不支持\n\n请检查网络连接、API密钥配置和图片格式`)
+      } else if (error.message.includes('No image generated')) {
+        throw new Error('🎨 图生图失败\n\n可能的原因：\n1. 上传的图片不清晰或格式不支持\n2. 文本描述与图片不匹配\n3. 服务器处理超时\n\n请尝试：\n1. 使用清晰的JPG或PNG图片\n2. 调整文本描述\n3. 稍后重试')
+      }
+    }
+
+    throw new Error(`🚫 图生图未知错误：${error}\n\n请联系技术支持或稍后重试`)
   }
 }
 
