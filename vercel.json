@@ -1,36 +1,9 @@
 {
-  "version": 2,
-  "name": "0820jiaotianxiang",
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "dist"
-      }
-    },
-    {
-      "src": "server/proxy-server.js",
-      "use": "@vercel/node",
-      "config": {
-        "maxDuration": 30
-      }
+  "functions": {
+    "server/proxy-server.js": {
+      "maxDuration": 30
     }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/server/proxy-server.js"
-    },
-    {
-      "src": "/health",
-      "dest": "/server/proxy-server.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/dist/$1"
-    }
-  ],
+  },
   "env": {
     "VITE_VOLCENGINE_ACCESS_KEY_ID": "@volcengine-access-key-id",
     "VITE_VOLCENGINE_SECRET_ACCESS_KEY": "@volcengine-secret-access-key",
@@ -56,6 +29,14 @@
     }
   ],
   "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/server/proxy-server.js"
+    },
+    {
+      "source": "/health",
+      "destination": "/server/proxy-server.js"
+    },
     {
       "source": "/packaging-design",
       "destination": "/index.html"
