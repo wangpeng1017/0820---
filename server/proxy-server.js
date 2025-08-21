@@ -291,10 +291,15 @@ app.get('/health', (req, res) => {
   })
 })
 
-// 启动服务器
-app.listen(PORT, () => {
-  console.log('🚀 代理服务器启动成功！')
-  console.log(`📡 服务地址: http://localhost:${PORT}`)
-  console.log(`🔑 火山引擎API密钥状态: ${VOLCENGINE_CONFIG.accessKeyId && VOLCENGINE_CONFIG.secretAccessKey ? '已配置' : '未配置'}`)
-  console.log(`🤖 Google Gemini API密钥状态: ${GEMINI_CONFIG.apiKey ? '已配置' : '未配置'}`)
-})
+// Vercel serverless函数导出
+module.exports = app
+
+// 本地开发时启动服务器
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log('🚀 代理服务器启动成功！')
+    console.log(`📡 服务地址: http://localhost:${PORT}`)
+    console.log(`🔑 火山引擎API密钥状态: ${VOLCENGINE_CONFIG.accessKeyId && VOLCENGINE_CONFIG.secretAccessKey ? '已配置' : '未配置'}`)
+    console.log(`🤖 Google Gemini API密钥状态: ${GEMINI_CONFIG.apiKey ? '已配置' : '未配置'}`)
+  })
+}

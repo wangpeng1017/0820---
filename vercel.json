@@ -1,0 +1,70 @@
+{
+  "version": 2,
+  "name": "0820jiaotianxiang",
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
+    },
+    {
+      "src": "server/proxy-server.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/server/proxy-server.js"
+    },
+    {
+      "src": "/health",
+      "dest": "/server/proxy-server.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/dist/$1"
+    }
+  ],
+  "functions": {
+    "server/proxy-server.js": {
+      "maxDuration": 30
+    }
+  },
+  "env": {
+    "VITE_VOLCENGINE_ACCESS_KEY_ID": "@volcengine-access-key-id",
+    "VITE_VOLCENGINE_SECRET_ACCESS_KEY": "@volcengine-secret-access-key",
+    "GOOGLE_GEMINI_API_KEY": "@google-gemini-api-key"
+  },
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, PUT, DELETE, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "Content-Type, Authorization, X-Requested-With"
+        }
+      ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/packaging-design",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/packaging-design/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
