@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
-import { Card, Tabs, Button, Table, Tag, Space, Row, Col, Statistic, Modal, Form, Input, Select, Upload, Alert, Progress, Divider, ColorPicker, Slider } from 'antd'
+import { Card, Tabs, Button, Table, Tag, Space, Row, Col, Statistic, Modal, Form, Input, Select, Upload, Alert, Progress, Divider, ColorPicker, Slider, message, Spin, Timeline } from 'antd'
+import { generateImageFromText, generateImageFromImage, fileToBase64, downloadBase64Image } from '../../services/volcengineApi'
 import {
   PlusOutlined,
   EditOutlined,
@@ -102,6 +103,86 @@ const PackagingDesign: React.FC = () => {
   const [selectedRecord, setSelectedRecord] = useState<any>(null)
   const [aiDesignModalVisible, setAiDesignModalVisible] = useState(false)
   const [complianceModalVisible, setComplianceModalVisible] = useState(false)
+
+  // 火山引擎API相关状态
+  const [textToImageLoading, setTextToImageLoading] = useState(false)
+  const [imageToImageLoading, setImageToImageLoading] = useState(false)
+  const [generatedImage, setGeneratedImage] = useState<string>('')
+  const [textPrompt, setTextPrompt] = useState('')
+  const [uploadedImage, setUploadedImage] = useState<File | null>(null)
+  const [imagePrompt, setImagePrompt] = useState('')
+
+  // 处理文生图功能
+  const handleTextToImage = async () => {
+    if (!textPrompt.trim()) {
+      message.error('请输入文本描述')
+      return
+    }
+
+    setTextToImageLoading(true)
+    try {
+      const base64Image = await generateImageFromText({
+        prompt: textPrompt,
+        width: 512,
+        height: 512,
+        scale: 7.5,
+        ddim_steps: 25,
+        style_term: 'packaging design, product design, commercial design'
+      })
+
+      setGeneratedImage(base64Image)
+      message.success('图像生成成功！')
+    } catch (error) {
+      console.error('文生图失败:', error)
+      message.error('图像生成失败，请稍后重试')
+    } finally {
+      setTextToImageLoading(false)
+    }
+  }
+
+  // 处理图生图功能
+  const handleImageToImage = async () => {
+    if (!uploadedImage) {
+      message.error('请先上传参考图像')
+      return
+    }
+
+    if (!imagePrompt.trim()) {
+      message.error('请输入转换描述')
+      return
+    }
+
+    setImageToImageLoading(true)
+    try {
+      const base64Input = await fileToBase64(uploadedImage)
+      const base64Image = await generateImageFromImage({
+        prompt: imagePrompt,
+        image: base64Input,
+        width: 512,
+        height: 512,
+        scale: 7.5,
+        ddim_steps: 25,
+        strength: 0.8,
+        style_term: 'packaging design, product design, commercial design'
+      })
+
+      setGeneratedImage(base64Image)
+      message.success('图像转换成功！')
+    } catch (error) {
+      console.error('图生图失败:', error)
+      message.error('图像转换失败，请稍后重试')
+    } finally {
+      setImageToImageLoading(false)
+    }
+  }
+
+  // 下载生成的图像
+  const handleDownloadImage = () => {
+    if (generatedImage) {
+      downloadBase64Image(generatedImage, `packaging-design-${Date.now()}.png`)
+      message.success('图像下载成功！')
+    }
+  }
 
   // 模拟包装设计数据
   const packagingDesigns: PackagingDesign[] = [
@@ -755,8 +836,10 @@ const PackagingDesign: React.FC = () => {
             <Row gutter={[16, 16]}>
               <Col xs={24} lg={8}>
                 <Card size="small" title="文本描述">
-                  <TextArea
+                  <Input.TextArea
                     rows={4}
+                    value={textPrompt}
+                    onChange={(e) => setTextPrompt(e.target.value)}
                     placeholder="请描述您想要的包装设计，例如：一个现代简约风格的软包设计，采用金色和黑色搭配，体现高端品质感..."
                   />
                   <Space style={{ marginTop: 16, width: '100%' }} direction="vertical">
@@ -766,8 +849,14 @@ const PackagingDesign: React.FC = () => {
                       <Option value="minimalist">极简主义</Option>
                       <Option value="vintage">复古风格</Option>
                     </Select>
-                    <Button type="primary" icon={<FileImageOutlined />} block>
-                      生成设计图
+                    <Button
+                      type="primary"
+                      icon={<FileImageOutlined />}
+                      loading={textToImageLoading}
+                      onClick={handleTextToImage}
+                      block
+                    >
+                      {textToImageLoading ? '生成中...' : '生成设计图'}
                     </Button>
                   </Space>
                 </Card>
@@ -775,23 +864,173 @@ const PackagingDesign: React.FC = () => {
 
               <Col xs={24} lg={16}>
                 <Card size="small" title="生成结果">
-                  <div style={{
-                    height: 200,
-                    background: '#f5f5f5',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    border: '2px dashed #d9d9d9'
-                  }}>
-                    <div style={{ textAlign: 'center', color: '#999' }}>
-                      <FileImageOutlined style={{ fontSize: 48, marginBottom: 16 }} />
-                      <div>AI生成的包装设计图将在此显示</div>
+                  <Spin spinning={textToImageLoading}>
+                    <div style={{
+                      height: 400,
+                      background: '#f5f5f5',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      border: '2px dashed #d9d9d9',
+                      borderRadius: 8,
+                      overflow: 'hidden'
+                    }}>
+                      {generatedImage ? (
+                        <img
+                          src={`data:image/png;base64,${generatedImage}`}
+                          alt="Generated packaging design"
+                          style={{
+                            maxWidth: '100%',
+                            maxHeight: '100%',
+                            objectFit: 'contain'
+                          }}
+                        />
+                      ) : (
+                        <div style={{ textAlign: 'center', color: '#999' }}>
+                          <FileImageOutlined style={{ fontSize: 48, marginBottom: 16 }} />
+                          <div>AI生成的包装设计图将在此显示</div>
+                        </div>
+                      )}
                     </div>
-                  </div>
+                  </Spin>
                   <Space style={{ marginTop: 16 }}>
-                    <Button icon={<DownloadOutlined />}>下载图片</Button>
-                    <Button icon={<EditOutlined />}>编辑优化</Button>
-                    <Button icon={<CopyOutlined />}>生成变体</Button>
+                    <Button
+                      icon={<DownloadOutlined />}
+                      onClick={handleDownloadImage}
+                      disabled={!generatedImage}
+                    >
+                      下载图片
+                    </Button>
+                    <Button icon={<EditOutlined />} disabled={!generatedImage}>
+                      编辑优化
+                    </Button>
+                    <Button
+                      icon={<CopyOutlined />}
+                      onClick={handleTextToImage}
+                      loading={textToImageLoading}
+                      disabled={!textPrompt.trim()}
+                    >
+                      生成变体
+                    </Button>
+                  </Space>
+                </Card>
+              </Col>
+            </Row>
+          </Card>
+
+          <Card title="图生图设计" style={{ marginTop: 16 }}>
+            <Row gutter={[16, 16]}>
+              <Col xs={24} lg={8}>
+                <Card size="small" title="参考图像">
+                  <Upload
+                    accept="image/*"
+                    showUploadList={false}
+                    beforeUpload={(file) => {
+                      setUploadedImage(file)
+                      return false
+                    }}
+                  >
+                    <div style={{
+                      height: 200,
+                      border: '2px dashed #d9d9d9',
+                      borderRadius: 8,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      background: uploadedImage ? 'transparent' : '#fafafa'
+                    }}>
+                      {uploadedImage ? (
+                        <img
+                          src={URL.createObjectURL(uploadedImage)}
+                          alt="Uploaded reference"
+                          style={{
+                            maxWidth: '100%',
+                            maxHeight: '100%',
+                            objectFit: 'contain'
+                          }}
+                        />
+                      ) : (
+                        <div style={{ textAlign: 'center', color: '#999' }}>
+                          <PlusOutlined style={{ fontSize: 32, marginBottom: 8 }} />
+                          <div>点击上传参考图像</div>
+                        </div>
+                      )}
+                    </div>
+                  </Upload>
+
+                  <Input.TextArea
+                    rows={3}
+                    value={imagePrompt}
+                    onChange={(e) => setImagePrompt(e.target.value)}
+                    placeholder="请描述您希望如何转换这张图像，例如：将这个设计改为金色主题，增加现代感..."
+                    style={{ marginTop: 16 }}
+                  />
+
+                  <Button
+                    type="primary"
+                    icon={<FileImageOutlined />}
+                    loading={imageToImageLoading}
+                    onClick={handleImageToImage}
+                    disabled={!uploadedImage || !imagePrompt.trim()}
+                    block
+                    style={{ marginTop: 16 }}
+                  >
+                    {imageToImageLoading ? '转换中...' : '开始转换'}
+                  </Button>
+                </Card>
+              </Col>
+
+              <Col xs={24} lg={16}>
+                <Card size="small" title="转换结果">
+                  <Spin spinning={imageToImageLoading}>
+                    <div style={{
+                      height: 400,
+                      background: '#f5f5f5',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      border: '2px dashed #d9d9d9',
+                      borderRadius: 8,
+                      overflow: 'hidden'
+                    }}>
+                      {generatedImage ? (
+                        <img
+                          src={`data:image/png;base64,${generatedImage}`}
+                          alt="Generated packaging design"
+                          style={{
+                            maxWidth: '100%',
+                            maxHeight: '100%',
+                            objectFit: 'contain'
+                          }}
+                        />
+                      ) : (
+                        <div style={{ textAlign: 'center', color: '#999' }}>
+                          <FileImageOutlined style={{ fontSize: 48, marginBottom: 16 }} />
+                          <div>AI转换的包装设计图将在此显示</div>
+                        </div>
+                      )}
+                    </div>
+                  </Spin>
+                  <Space style={{ marginTop: 16 }}>
+                    <Button
+                      icon={<DownloadOutlined />}
+                      onClick={handleDownloadImage}
+                      disabled={!generatedImage}
+                    >
+                      下载图片
+                    </Button>
+                    <Button icon={<EditOutlined />} disabled={!generatedImage}>
+                      编辑优化
+                    </Button>
+                    <Button
+                      icon={<CopyOutlined />}
+                      onClick={handleImageToImage}
+                      loading={imageToImageLoading}
+                      disabled={!uploadedImage || !imagePrompt.trim()}
+                    >
+                      生成变体
+                    </Button>
                   </Space>
                 </Card>
               </Col>
