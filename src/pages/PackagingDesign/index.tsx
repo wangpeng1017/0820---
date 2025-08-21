@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Card, Tabs, Button, Table, Tag, Space, Row, Col, Statistic, Modal, Form, Input, Select, Upload, Alert, Progress, Divider, ColorPicker, Slider, message, Spin, Timeline } from 'antd'
-import { generateImageFromText, generateImageFromImage, fileToBase64, downloadBase64Image } from '../../services/volcengineApi'
+import { generateImageFromText, generateImageFromImage, fileToBase64, downloadBase64Image, downloadImageFromUrl } from '../../services/volcengineApi'
 import ApiConfigGuide from '../../components/ApiConfigGuide'
 import {
   PlusOutlined,
@@ -193,10 +193,15 @@ const PackagingDesign: React.FC = () => {
   }
 
   // 下载生成的图像
-  const handleDownloadImage = () => {
+  const handleDownloadImage = async () => {
     if (generatedImage) {
-      downloadBase64Image(generatedImage, `packaging-design-${Date.now()}.png`)
-      message.success('图像下载成功！')
+      try {
+        await downloadImageFromUrl(generatedImage, `packaging-design-${Date.now()}.png`)
+        message.success('图像下载成功！')
+      } catch (error) {
+        console.error('下载失败:', error)
+        message.error('图像下载失败，请稍后重试')
+      }
     }
   }
 
@@ -893,7 +898,7 @@ const PackagingDesign: React.FC = () => {
                     }}>
                       {generatedImage ? (
                         <img
-                          src={`data:image/png;base64,${generatedImage}`}
+                          src={generatedImage}
                           alt="Generated packaging design"
                           style={{
                             maxWidth: '100%',
@@ -1012,7 +1017,7 @@ const PackagingDesign: React.FC = () => {
                     }}>
                       {generatedImage ? (
                         <img
-                          src={`data:image/png;base64,${generatedImage}`}
+                          src={generatedImage}
                           alt="Generated packaging design"
                           style={{
                             maxWidth: '100%',

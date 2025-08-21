@@ -269,3 +269,25 @@ export function downloadBase64Image(base64: string, filename: string = 'generate
   link.click()
   document.body.removeChild(link)
 }
+
+// 下载URL图片
+export async function downloadImageFromUrl(imageUrl: string, filename: string = 'generated-image.png') {
+  try {
+    const response = await fetch(imageUrl)
+    const blob = await response.blob()
+    const url = window.URL.createObjectURL(blob)
+
+    const link = document.createElement('a')
+    link.href = url
+    link.download = filename
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+
+    // 清理URL对象
+    window.URL.revokeObjectURL(url)
+  } catch (error) {
+    console.error('下载图片失败:', error)
+    throw new Error('图片下载失败，请稍后重试')
+  }
+}
