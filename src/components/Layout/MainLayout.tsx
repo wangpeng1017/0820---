@@ -219,7 +219,7 @@ const MainLayout: React.FC = () => {
       return ['design-platform']
     }
     return []
-  } || MODULES.DASHBOARD
+  }
 
   return (
     <Layout className="main-layout">
