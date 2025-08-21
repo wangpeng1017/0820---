@@ -4,11 +4,7 @@
       "maxDuration": 30
     }
   },
-  "env": {
-    "VITE_VOLCENGINE_ACCESS_KEY_ID": "@volcengine-access-key-id",
-    "VITE_VOLCENGINE_SECRET_ACCESS_KEY": "@volcengine-secret-access-key",
-    "GOOGLE_GEMINI_API_KEY": "@google-gemini-api-key"
-  },
+
   "headers": [
     {
       "source": "/api/(.*)",

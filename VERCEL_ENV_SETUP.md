@@ -14,7 +14,7 @@
 - **Value**: 从项目.env文件复制对应值
 - **Environments**: 选择 Production, Preview, Development
 
-#### 变量2: 火山引擎Secret Key  
+#### 变量2: 火山引擎Secret Key
 - **Name**: `VITE_VOLCENGINE_SECRET_ACCESS_KEY`
 - **Value**: 从项目.env文件复制对应值
 - **Environments**: 选择 Production, Preview, Development
