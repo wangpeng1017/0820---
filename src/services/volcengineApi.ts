@@ -163,8 +163,8 @@ export async function generateImageFromText(request: TextToImageRequest): Promis
 
     const result = await response.json()
 
-    if (result.success && result.image) {
-      return result.image
+    if (result.success && result.data && result.data.image_urls && result.data.image_urls.length > 0) {
+      return result.data.image_urls[0]
     } else {
       throw new Error(result.error || 'No image generated')
     }
@@ -214,8 +214,8 @@ export async function generateImageFromImage(request: ImageToImageRequest): Prom
 
     const result = await response.json()
 
-    if (result.success && result.image) {
-      return result.image
+    if (result.success && result.data && result.data.image_urls && result.data.image_urls.length > 0) {
+      return result.data.image_urls[0]
     } else {
       throw new Error(result.error || 'No image generated')
     }

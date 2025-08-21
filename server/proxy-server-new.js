@@ -206,19 +206,19 @@ app.post('/api/text-to-image', async (req, res) => {
 
 app.post('/api/image-to-image', async (req, res) => {
   try {
-    const { image, prompt, style } = req.body
-
-    if (!image || !prompt) {
-      return res.status(400).json({ error: '缺少image或prompt参数' })
+    const { imageUrl, prompt, style } = req.body
+    
+    if (!imageUrl || !prompt) {
+      return res.status(400).json({ error: '缺少imageUrl或prompt参数' })
     }
-
-    console.log('🖼️ 收到图生图请求:', { image: image.substring(0, 50) + '...', prompt, style })
-
+    
+    console.log('🖼️ 收到图生图请求:', { imageUrl, prompt, style })
+    
     // 图生图功能实现
     const payload = JSON.stringify({
       req_key: 'jimeng_high_aes_img2img_v21_L',
       prompt: prompt,
-      image_url: image, // 前端传来的是base64或URL
+      image_url: imageUrl,
       return_url: true
     })
     

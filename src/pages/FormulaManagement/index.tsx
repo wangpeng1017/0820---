@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Card, Table, Button, Input, Select, Space, Tag, Modal, Form, Tabs, Row, Col, Divider, Statistic, Progress, Descriptions, Alert, Timeline } from 'antd'
+import { Card, Table, Button, Input, Select, Space, Tag, Modal, Form, Tabs, Row, Col, Divider, Statistic, Progress, Descriptions, Alert, Timeline, Upload, message } from 'antd'
 import {
   PlusOutlined,
   EditOutlined,
@@ -14,7 +14,10 @@ import {
   BulbOutlined,
   ExperimentOutlined,
   ThunderboltOutlined,
-  FileTextOutlined
+  FileTextOutlined,
+  RobotOutlined,
+  InboxOutlined,
+  LoadingOutlined
 } from '@ant-design/icons'
 import type { Formula } from '../../types'
 
@@ -58,6 +61,13 @@ const FormulaManagement: React.FC = () => {
   const [selectedFormula1, setSelectedFormula1] = useState<Formula | null>(null)
   const [selectedFormula2, setSelectedFormula2] = useState<Formula | null>(null)
   const [comparisonResult, setComparisonResult] = useState<FormulaComparison | null>(null)
+
+  // 智能录入相关状态
+  const [smartInputModalVisible, setSmartInputModalVisible] = useState(false)
+  const [smartInputActiveTab, setSmartInputActiveTab] = useState('text')
+  const [textInput, setTextInput] = useState('')
+  const [uploadedFile, setUploadedFile] = useState<any>(null)
+  const [isProcessing, setIsProcessing] = useState(false)
 
   // 模拟配方数据
   const formulas: Formula[] = [
@@ -437,6 +447,70 @@ const FormulaManagement: React.FC = () => {
     }
   }
 
+  // 智能录入处理函数
+  const handleSmartInput = async () => {
+    setIsProcessing(true)
+    try {
+      // 模拟AI处理过程
+      await new Promise(resolve => setTimeout(resolve, 2000))
+
+      if (smartInputActiveTab === 'text') {
+        if (!textInput.trim()) {
+          message.warning('请输入配方信息')
+          return
+        }
+        message.success('文本解析完成，识别到配方信息')
+      } else {
+        if (!uploadedFile) {
+          message.warning('请上传图片文件')
+          return
+        }
+        message.success('图片识别完成，提取到配方数据')
+      }
+
+      // 这里可以添加实际的数据处理逻辑
+      // 暂时关闭弹窗
+      setSmartInputModalVisible(false)
+      resetSmartInputForm()
+
+    } catch (error) {
+      message.error('处理失败，请重试')
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  // 重置智能录入表单
+  const resetSmartInputForm = () => {
+    setTextInput('')
+    setUploadedFile(null)
+    setSmartInputActiveTab('text')
+  }
+
+  // 文件上传配置
+  const uploadProps = {
+    name: 'file',
+    multiple: false,
+    accept: '.jpg,.jpeg,.png,.pdf',
+    beforeUpload: (file: any) => {
+      const isValidType = file.type === 'image/jpeg' || file.type === 'image/png' || file.type === 'application/pdf'
+      if (!isValidType) {
+        message.error('只支持 JPG、PNG、PDF 格式的文件')
+        return false
+      }
+      const isLt10M = file.size / 1024 / 1024 < 10
+      if (!isLt10M) {
+        message.error('文件大小不能超过 10MB')
+        return false
+      }
+      setUploadedFile(file)
+      return false // 阻止自动上传
+    },
+    onRemove: () => {
+      setUploadedFile(null)
+    }
+  }
+
   const columns = [
     {
       title: '配方编号',
@@ -569,6 +643,9 @@ const FormulaManagement: React.FC = () => {
           </Button>
           <Button icon={<SwapOutlined />} onClick={() => setCompareModalVisible(true)}>
             版本比对
+          </Button>
+          <Button icon={<RobotOutlined />} onClick={() => setSmartInputModalVisible(true)}>
+            智能录入
           </Button>
         </Space>
 
@@ -1201,6 +1278,95 @@ const FormulaManagement: React.FC = () => {
             </Tabs>
           </div>
         )}
+      </Modal>
+
+      {/* 智能录入模态框 */}
+      <Modal
+        title="智能录入叶组配方"
+        open={smartInputModalVisible}
+        onCancel={() => {
+          setSmartInputModalVisible(false)
+          resetSmartInputForm()
+        }}
+        width={800}
+        footer={[
+          <Button key="cancel" onClick={() => {
+            setSmartInputModalVisible(false)
+            resetSmartInputForm()
+          }}>
+            取消
+          </Button>,
+          <Button
+            key="process"
+            type="primary"
+            icon={isProcessing ? <LoadingOutlined /> : <ThunderboltOutlined />}
+            onClick={handleSmartInput}
+            loading={isProcessing}
+          >
+            {isProcessing ? '处理中...' : '开始识别'}
+          </Button>
+        ]}
+      >
+        <Tabs
+          activeKey={smartInputActiveTab}
+          onChange={setSmartInputActiveTab}
+          items={[
+            {
+              key: 'text',
+              label: '文字录入',
+              children: (
+                <div style={{ padding: '16px 0' }}>
+                  <Alert
+                    message="支持批量录入多条配方数据"
+                    description="请按照标准格式输入配方信息，系统将自动解析并创建配方记录"
+                    type="info"
+                    showIcon
+                    style={{ marginBottom: 16 }}
+                  />
+                  <Input.TextArea
+                    value={textInput}
+                    onChange={(e) => setTextInput(e.target.value)}
+                    placeholder="请输入叶组配方信息，支持批量录入多条数据&#10;&#10;示例格式：&#10;配方名称：云南香型配方V3.3&#10;主料：云南烟叶 50%&#10;辅料：贵州烟叶 30%&#10;调节料：河南烟叶 20%&#10;焦油：8.5mg&#10;尼古丁：0.8mg&#10;一氧化碳：9.2mg"
+                    rows={12}
+                    style={{ fontSize: '14px', lineHeight: '1.6' }}
+                  />
+                </div>
+              )
+            },
+            {
+              key: 'image',
+              label: '图片识别',
+              children: (
+                <div style={{ padding: '16px 0' }}>
+                  <Alert
+                    message="支持识别历史配方截图"
+                    description="上传jpg、png、pdf等格式文件，系统将自动识别图片中的配方信息"
+                    type="info"
+                    showIcon
+                    style={{ marginBottom: 16 }}
+                  />
+                  <Upload.Dragger {...uploadProps} style={{ padding: '40px 20px' }}>
+                    <p className="ant-upload-drag-icon">
+                      <InboxOutlined style={{ fontSize: '48px', color: '#1890ff' }} />
+                    </p>
+                    <p className="ant-upload-text" style={{ fontSize: '16px', marginBottom: '8px' }}>
+                      点击或拖拽文件到此区域上传
+                    </p>
+                    <p className="ant-upload-hint" style={{ color: '#666' }}>
+                      支持 JPG、PNG、PDF 格式，文件大小不超过 10MB
+                    </p>
+                    {uploadedFile && (
+                      <div style={{ marginTop: 16, padding: '8px 16px', background: '#f6ffed', border: '1px solid #b7eb8f', borderRadius: '6px' }}>
+                        <CheckCircleOutlined style={{ color: '#52c41a', marginRight: 8 }} />
+                        已选择文件：{uploadedFile.name}
+                      </div>
+                    )}
+                  </Upload.Dragger>
+                </div>
+              )
+            }
+          ]}
+        />
       </Modal>
     </div>
   )
