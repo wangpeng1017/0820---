@@ -138,8 +138,17 @@ export default async function handler(req, res) {
   }
   
   try {
-    const { prompt, style } = req.body
-    
+    // 解析JSON body（Vercel serverless函数需要手动解析）
+    let body
+    try {
+      body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body
+    } catch (parseError) {
+      console.error('JSON解析错误:', parseError)
+      return res.status(400).json({ error: 'Invalid JSON' })
+    }
+
+    const { prompt, style } = body
+
     if (!prompt) {
       return res.status(400).json({ error: '缺少prompt参数' })
     }
