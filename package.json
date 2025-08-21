@@ -23,12 +23,14 @@
     "axios": "^1.5.0",
     "mockjs": "^1.1.0",
     "zustand": "^4.4.1",
-    "classnames": "^2.3.2"
+    "classnames": "^2.3.2",
+    "crypto-js": "^4.2.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.15",
     "@types/react-dom": "^18.2.7",
     "@types/mockjs": "^1.0.7",
+    "@types/crypto-js": "^4.2.2",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
     "@vitejs/plugin-react": "^4.0.3",
