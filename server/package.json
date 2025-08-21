@@ -1,0 +1,27 @@
+{
+  "name": "volcengine-proxy-server",
+  "version": "1.0.0",
+  "description": "火山引擎API代理服务器",
+  "main": "proxy-server.js",
+  "scripts": {
+    "start": "node proxy-server.js",
+    "dev": "nodemon proxy-server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "node-fetch": "^2.7.0",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "keywords": [
+    "volcengine",
+    "proxy",
+    "api",
+    "image-generation"
+  ],
+  "author": "",
+  "license": "MIT"
+}

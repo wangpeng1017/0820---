@@ -137,52 +137,46 @@ function validateApiConfig() {
   }
 }
 
-// 文生图API调用
+// 文生图API调用（通过代理服务器）
 export async function generateImageFromText(request: TextToImageRequest): Promise<string> {
-  validateApiConfig()
-  
-  const action = 'CVProcess'
-  const payload = JSON.stringify({
-    req_key: 'high_aes',
-    prompt: request.prompt,
-    model_version: request.model_version || 'general_v1.4',
-    width: request.width || 512,
-    height: request.height || 512,
-    scale: request.scale || 7.5,
-    seed: request.seed || Math.floor(Math.random() * 1000000),
-    ddim_steps: request.ddim_steps || 25,
-    style_term: request.style_term || ''
-  })
-  
-  const headers = createHeaders(payload)
-  
   try {
-    const response = await fetch(`https://${VOLCENGINE_CONFIG.host}/?Action=${action}&Version=${VOLCENGINE_CONFIG.version}`, {
+    const response = await fetch('http://localhost:3002/api/text-to-image', {
       method: 'POST',
-      headers,
-      body: payload
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        prompt: request.prompt,
+        model_version: request.model_version || 'general_v1.4',
+        width: request.width || 512,
+        height: request.height || 512,
+        scale: request.scale || 7.5,
+        seed: request.seed || Math.floor(Math.random() * 1000000),
+        ddim_steps: request.ddim_steps || 25,
+        style_term: request.style_term || ''
+      })
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    
-    const result: ApiResponse = await response.json()
-    
-    if (result.Result && result.Result.data && result.Result.data.length > 0) {
-      return result.Result.data[0].image
+
+    const result = await response.json()
+
+    if (result.success && result.image) {
+      return result.image
     } else {
-      throw new Error('No image generated')
+      throw new Error(result.error || 'No image generated')
     }
   } catch (error) {
     console.error('Error generating image from text:', error)
 
     // 提供更友好的错误信息
     if (error instanceof Error) {
-      if (error.message.includes('火山引擎API密钥')) {
-        throw error // 直接抛出配置错误
+      if (error.message.includes('Failed to fetch') || error.message.includes('ECONNREFUSED')) {
+        throw new Error('🔌 代理服务器连接失败\n\n请确保：\n1. 代理服务器已启动（端口3002）\n2. 运行命令：cd server && npm install && npm start\n3. 检查控制台是否有错误信息')
       } else if (error.message.includes('HTTP error')) {
-        throw new Error(`🌐 API调用失败：${error.message}\n\n可能的原因：\n1. 网络连接问题\n2. API密钥无效\n3. 服务暂时不可用\n\n请检查网络连接和API密钥配置`)
+        throw new Error(`🌐 API调用失败：${error.message}\n\n可能的原因：\n1. API密钥配置错误\n2. 网络连接问题\n3. 服务暂时不可用\n\n请检查.env文件中的API密钥配置`)
       } else if (error.message.includes('No image generated')) {
         throw new Error('🎨 图像生成失败\n\n可能的原因：\n1. 文本描述不够清晰\n2. 服务器处理超时\n3. 内容不符合生成要求\n\n请尝试：\n1. 简化或重新描述您的需求\n2. 稍后重试')
       }
@@ -192,54 +186,48 @@ export async function generateImageFromText(request: TextToImageRequest): Promis
   }
 }
 
-// 图生图API调用
+// 图生图API调用（通过代理服务器）
 export async function generateImageFromImage(request: ImageToImageRequest): Promise<string> {
-  validateApiConfig()
-  
-  const action = 'CVProcess'
-  const payload = JSON.stringify({
-    req_key: 'img2img_high_aes',
-    prompt: request.prompt,
-    image: request.image,
-    model_version: request.model_version || 'general_v1.4',
-    width: request.width || 512,
-    height: request.height || 512,
-    scale: request.scale || 7.5,
-    seed: request.seed || Math.floor(Math.random() * 1000000),
-    ddim_steps: request.ddim_steps || 25,
-    strength: request.strength || 0.8,
-    style_term: request.style_term || ''
-  })
-  
-  const headers = createHeaders(payload)
-  
   try {
-    const response = await fetch(`https://${VOLCENGINE_CONFIG.host}/?Action=${action}&Version=${VOLCENGINE_CONFIG.version}`, {
+    const response = await fetch('http://localhost:3002/api/image-to-image', {
       method: 'POST',
-      headers,
-      body: payload
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        prompt: request.prompt,
+        image: request.image,
+        model_version: request.model_version || 'general_v1.4',
+        width: request.width || 512,
+        height: request.height || 512,
+        scale: request.scale || 7.5,
+        seed: request.seed || Math.floor(Math.random() * 1000000),
+        ddim_steps: request.ddim_steps || 25,
+        strength: request.strength || 0.8,
+        style_term: request.style_term || ''
+      })
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    
-    const result: ApiResponse = await response.json()
-    
-    if (result.Result && result.Result.data && result.Result.data.length > 0) {
-      return result.Result.data[0].image
+
+    const result = await response.json()
+
+    if (result.success && result.image) {
+      return result.image
     } else {
-      throw new Error('No image generated')
+      throw new Error(result.error || 'No image generated')
     }
   } catch (error) {
     console.error('Error generating image from image:', error)
 
     // 提供更友好的错误信息
     if (error instanceof Error) {
-      if (error.message.includes('火山引擎API密钥')) {
-        throw error // 直接抛出配置错误
+      if (error.message.includes('Failed to fetch') || error.message.includes('ECONNREFUSED')) {
+        throw new Error('🔌 代理服务器连接失败\n\n请确保：\n1. 代理服务器已启动（端口3002）\n2. 运行命令：cd server && npm install && npm start\n3. 检查控制台是否有错误信息')
       } else if (error.message.includes('HTTP error')) {
-        throw new Error(`🌐 图生图API调用失败：${error.message}\n\n可能的原因：\n1. 网络连接问题\n2. API密钥无效\n3. 上传的图片格式不支持\n\n请检查网络连接、API密钥配置和图片格式`)
+        throw new Error(`🌐 图生图API调用失败：${error.message}\n\n可能的原因：\n1. API密钥配置错误\n2. 网络连接问题\n3. 上传的图片格式不支持\n\n请检查.env文件中的API密钥配置和图片格式`)
       } else if (error.message.includes('No image generated')) {
         throw new Error('🎨 图生图失败\n\n可能的原因：\n1. 上传的图片不清晰或格式不支持\n2. 文本描述与图片不匹配\n3. 服务器处理超时\n\n请尝试：\n1. 使用清晰的JPG或PNG图片\n2. 调整文本描述\n3. 稍后重试')
       }

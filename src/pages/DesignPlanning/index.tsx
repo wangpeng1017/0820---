@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
-import { Card, Tabs, Button, Table, Tag, Space, Row, Col, Statistic, Progress, Modal, Form, Input, Select, Steps, Timeline, Divider, Alert } from 'antd'
+import { Card, Tabs, Button, Table, Tag, Space, Row, Col, Statistic, Progress, Modal, Form, Input, Select, Steps, Timeline, Divider, Alert, message, Spin, Typography, Collapse } from 'antd'
+import { generateIntelligentReport, REPORT_TEMPLATES, ANALYSIS_DIMENSIONS, type ReportGenerationRequest } from '../../services/geminiApi'
 import {
   FileTextOutlined,
   BarChartOutlined,
@@ -24,6 +25,8 @@ const { TabPane } = Tabs
 const { Option } = Select
 const { Step } = Steps
 const { TextArea } = Input
+const { Title, Paragraph, Text } = Typography
+const { Panel } = Collapse
 
 // 市场分析报告接口
 interface MarketAnalysisReport {
@@ -95,6 +98,12 @@ const DesignPlanning: React.FC = () => {
   const [selectedRecord, setSelectedRecord] = useState<any>(null)
   const [generateModalVisible, setGenerateModalVisible] = useState(false)
   const [targetModalVisible, setTargetModalVisible] = useState(false)
+
+  // 智能报告生成相关状态
+  const [reportForm] = Form.useForm()
+  const [reportGenerating, setReportGenerating] = useState(false)
+  const [generatedReport, setGeneratedReport] = useState<any>(null)
+  const [reportModalVisible, setReportModalVisible] = useState(false)
 
   // 模拟市场分析报告数据
   const marketReports: MarketAnalysisReport[] = [
@@ -386,6 +395,82 @@ const DesignPlanning: React.FC = () => {
       marketScore: 75
     }
   ]
+
+  // 处理智能报告生成
+  const handleGenerateReport = async () => {
+    try {
+      const values = await reportForm.validateFields()
+      setReportGenerating(true)
+
+      const request: ReportGenerationRequest = {
+        reportType: values.reportType,
+        analysisScope: values.analysisScope || [],
+        projectContext: values.projectContext,
+        requirements: values.requirements,
+        additionalInfo: values.additionalInfo
+      }
+
+      const response = await generateIntelligentReport(request)
+
+      if (response.success && response.report) {
+        setGeneratedReport(response.report)
+        setGenerateModalVisible(false)
+        setReportModalVisible(true)
+        message.success('智能报告生成成功！')
+      } else {
+        throw new Error(response.error || '报告生成失败')
+      }
+    } catch (error) {
+      console.error('报告生成失败:', error)
+      const errorMessage = error instanceof Error ? error.message : '报告生成失败，请稍后重试'
+      message.error(errorMessage, 8)
+    } finally {
+      setReportGenerating(false)
+    }
+  }
+
+  // 下载报告
+  const handleDownloadReport = () => {
+    if (!generatedReport) return
+
+    const reportContent = `
+# ${generatedReport.title}
+
+## 执行摘要
+${generatedReport.summary}
+
+${generatedReport.sections.map((section: any) => `
+## ${section.title}
+${section.content}
+
+${section.subsections?.map((sub: any) => `
+### ${sub.title}
+${sub.content}
+`).join('') || ''}
+`).join('')}
+
+## 建议与推荐
+${generatedReport.recommendations.map((rec: string, index: number) => `${index + 1}. ${rec}`).join('\n')}
+
+## 结论
+${generatedReport.conclusion}
+
+---
+生成时间：${new Date().toLocaleString()}
+`
+
+    const blob = new Blob([reportContent], { type: 'text/markdown;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `${generatedReport.title}.md`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+
+    message.success('报告下载成功！')
+  }
 
   return (
     <div className="page-container">
@@ -976,70 +1061,186 @@ const DesignPlanning: React.FC = () => {
 
       {/* 智能生成报告模态框 */}
       <Modal
-        title="智能生成市场分析报告"
+        title={
+          <Space>
+            <ThunderboltOutlined />
+            智能生成策划报告
+          </Space>
+        }
         open={generateModalVisible}
-        onCancel={() => setGenerateModalVisible(false)}
-        width={600}
+        onCancel={() => {
+          setGenerateModalVisible(false)
+          reportForm.resetFields()
+        }}
+        width={700}
         footer={[
-          <Button key="cancel" onClick={() => setGenerateModalVisible(false)}>
+          <Button key="cancel" onClick={() => {
+            setGenerateModalVisible(false)
+            reportForm.resetFields()
+          }}>
             取消
           </Button>,
-          <Button key="generate" type="primary" icon={<ThunderboltOutlined />}>
-            开始生成
+          <Button
+            key="generate"
+            type="primary"
+            icon={<ThunderboltOutlined />}
+            loading={reportGenerating}
+            onClick={handleGenerateReport}
+          >
+            {reportGenerating ? '生成中...' : '开始生成'}
           </Button>
         ]}
       >
-        <Form layout="vertical">
-          <Form.Item label="报告类型">
+        <Form form={reportForm} layout="vertical">
+          <Form.Item
+            name="reportType"
+            label="报告类型"
+            rules={[{ required: true, message: '请选择报告类型' }]}
+          >
             <Select placeholder="请选择报告类型">
-              <Option value="policy">政策环境分析</Option>
-              <Option value="market">市场规模分析</Option>
-              <Option value="consumer">消费者行为分析</Option>
-              <Option value="competitor">竞品策略分析</Option>
-              <Option value="comprehensive">综合市场分析</Option>
+              {Object.entries(REPORT_TEMPLATES).map(([key, template]) => (
+                <Option key={key} value={key}>
+                  <div>
+                    <div style={{ fontWeight: 'bold' }}>{template.name}</div>
+                    <div style={{ fontSize: '12px', color: '#666' }}>{template.description}</div>
+                  </div>
+                </Option>
+              ))}
             </Select>
           </Form.Item>
-          <Form.Item label="分析维度">
+          <Form.Item
+            name="analysisScope"
+            label="分析维度"
+            rules={[{ required: true, message: '请至少选择一个分析维度' }]}
+          >
             <Select mode="multiple" placeholder="请选择分析维度">
-              <Option value="policy">政策法规</Option>
-              <Option value="market_size">市场规模</Option>
-              <Option value="growth_trend">增长趋势</Option>
-              <Option value="consumer_behavior">消费行为</Option>
-              <Option value="competitor_analysis">竞品分析</Option>
-              <Option value="price_analysis">价格分析</Option>
-              <Option value="channel_analysis">渠道分析</Option>
-              <Option value="brand_analysis">品牌分析</Option>
+              {Object.entries(ANALYSIS_DIMENSIONS).map(([key, dimension]) => (
+                <Option key={key} value={key}>
+                  <div>
+                    <div style={{ fontWeight: 'bold' }}>{dimension.name}</div>
+                    <div style={{ fontSize: '12px', color: '#666' }}>{dimension.description}</div>
+                  </div>
+                </Option>
+              ))}
             </Select>
           </Form.Item>
-          <Form.Item label="数据源">
-            <Select mode="multiple" placeholder="请选择数据源">
-              <Option value="industry_report">行业报告</Option>
-              <Option value="government_data">政府数据</Option>
-              <Option value="survey_data">调研数据</Option>
-              <Option value="competitor_data">竞品数据</Option>
-              <Option value="internal_data">内部数据</Option>
-              <Option value="third_party">第三方数据</Option>
-            </Select>
+
+          <Form.Item name="projectContext" label="项目背景">
+            <TextArea
+              rows={3}
+              placeholder="请描述项目背景、目标市场、产品特点等相关信息..."
+              maxLength={500}
+              showCount
+            />
           </Form.Item>
-          <Form.Item label="分析深度">
-            <Select placeholder="请选择分析深度">
-              <Option value="basic">基础分析</Option>
-              <Option value="detailed">详细分析</Option>
-              <Option value="comprehensive">全面分析</Option>
-            </Select>
+
+          <Form.Item name="requirements" label="具体需求">
+            <TextArea
+              rows={3}
+              placeholder="请详细描述您希望报告重点关注的问题或分析需求..."
+              maxLength={500}
+              showCount
+            />
           </Form.Item>
-          <Form.Item label="特殊要求">
-            <TextArea rows={3} placeholder="请输入特殊分析要求或关注点..." />
+
+          <Form.Item name="additionalInfo" label="补充信息">
+            <TextArea
+              rows={2}
+              placeholder="其他需要AI考虑的信息（可选）..."
+              maxLength={300}
+              showCount
+            />
           </Form.Item>
         </Form>
 
         <Alert
-          message="AI生成提示"
-          description="系统将基于您选择的维度和数据源，利用大语言模型和数据分析算法生成专业的市场分析报告。预计生成时间：3-5分钟。"
+          message="🤖 Google Gemini AI 智能生成"
+          description="系统将基于您的需求，利用Google Gemini大语言模型生成专业的策划报告，包含深度分析、市场洞察和实施建议。预计生成时间：30秒-2分钟。"
           type="info"
           showIcon
           style={{ marginTop: 16 }}
         />
+      </Modal>
+
+      {/* 报告显示模态框 */}
+      <Modal
+        title={
+          <Space>
+            <FileTextOutlined />
+            {generatedReport?.title || '智能生成报告'}
+          </Space>
+        }
+        open={reportModalVisible}
+        onCancel={() => setReportModalVisible(false)}
+        width={1000}
+        footer={[
+          <Button key="close" onClick={() => setReportModalVisible(false)}>
+            关闭
+          </Button>,
+          <Button key="download" type="primary" icon={<DownloadOutlined />} onClick={handleDownloadReport}>
+            下载报告
+          </Button>
+        ]}
+        style={{ top: 20 }}
+      >
+        {generatedReport && (
+          <div style={{ maxHeight: '70vh', overflow: 'auto' }}>
+            {/* 执行摘要 */}
+            <Card size="small" style={{ marginBottom: 16 }}>
+              <Title level={4}>📋 执行摘要</Title>
+              <Paragraph>{generatedReport.summary}</Paragraph>
+            </Card>
+
+            {/* 报告章节 */}
+            <Collapse defaultActiveKey={['0']} style={{ marginBottom: 16 }}>
+              {generatedReport.sections?.map((section: any, index: number) => (
+                <Panel
+                  header={
+                    <Space>
+                      <Text strong>{section.title}</Text>
+                    </Space>
+                  }
+                  key={index}
+                >
+                  <Paragraph style={{ whiteSpace: 'pre-wrap' }}>
+                    {section.content}
+                  </Paragraph>
+
+                  {section.subsections && section.subsections.length > 0 && (
+                    <div style={{ marginTop: 16 }}>
+                      {section.subsections.map((subsection: any, subIndex: number) => (
+                        <div key={subIndex} style={{ marginBottom: 12 }}>
+                          <Title level={5}>{subsection.title}</Title>
+                          <Paragraph style={{ whiteSpace: 'pre-wrap' }}>
+                            {subsection.content}
+                          </Paragraph>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </Panel>
+              ))}
+            </Collapse>
+
+            {/* 建议与推荐 */}
+            <Card size="small" style={{ marginBottom: 16 }}>
+              <Title level={4}>💡 建议与推荐</Title>
+              <ul>
+                {generatedReport.recommendations?.map((recommendation: string, index: number) => (
+                  <li key={index} style={{ marginBottom: 8 }}>
+                    <Text>{recommendation}</Text>
+                  </li>
+                ))}
+              </ul>
+            </Card>
+
+            {/* 结论 */}
+            <Card size="small">
+              <Title level={4}>🎯 结论</Title>
+              <Paragraph>{generatedReport.conclusion}</Paragraph>
+            </Card>
+          </div>
+        )}
       </Modal>
 
       {/* 智能分解目标模态框 */}
