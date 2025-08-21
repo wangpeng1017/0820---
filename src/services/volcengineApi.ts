@@ -137,10 +137,17 @@ function validateApiConfig() {
   }
 }
 
+// 获取API基础URL
+const getApiBaseUrl = () => {
+  // 在生产环境中使用相对路径，在开发环境中使用localhost
+  return import.meta.env.PROD ? '' : 'http://localhost:3002'
+}
+
 // 文生图API调用（通过代理服务器）
 export async function generateImageFromText(request: TextToImageRequest): Promise<string> {
   try {
-    const response = await fetch('http://localhost:3002/api/text-to-image', {
+    const apiBaseUrl = getApiBaseUrl()
+    const response = await fetch(`${apiBaseUrl}/api/text-to-image`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -189,7 +196,8 @@ export async function generateImageFromText(request: TextToImageRequest): Promis
 // 图生图API调用（通过代理服务器）
 export async function generateImageFromImage(request: ImageToImageRequest): Promise<string> {
   try {
-    const response = await fetch('http://localhost:3002/api/image-to-image', {
+    const apiBaseUrl = getApiBaseUrl()
+    const response = await fetch(`${apiBaseUrl}/api/image-to-image`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

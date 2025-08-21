@@ -1,0 +1,13 @@
+# 快速提交命令
+
+git add .
+
+git commit -m "fix: 修复生产环境AI功能问题
+
+- 修复API调用硬编码localhost问题
+- 添加环境自适应配置
+- 添加生产环境部署配置
+- 添加Docker部署支持
+- 更新部署文档"
+
+git push origin main

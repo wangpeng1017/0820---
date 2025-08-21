@@ -1,0 +1,47 @@
+# Git提交命令 - 请在终端中依次执行以下命令
+
+# 1. 检查Git状态
+git status
+
+# 2. 添加所有变更文件
+git add .
+
+# 3. 提交变更（复制整个命令，包括多行提交信息）
+git commit -m "🚀 修复生产环境AI功能问题
+
+✅ 问题修复:
+- 修复前端API调用硬编码localhost:3002的问题
+- 添加环境自适应API地址配置
+- 文生图功能现在可以在生产环境正常工作
+- 智能报告生成功能现在可以在生产环境正常工作
+
+🔧 技术改进:
+- src/services/volcengineApi.ts: 添加getApiBaseUrl()函数
+- src/services/geminiApi.ts: 添加getApiBaseUrl()函数
+- 开发环境使用localhost:3002，生产环境使用相对路径
+
+🐳 部署配置:
+- 添加nginx.conf反向代理配置
+- 添加docker-compose.prod.yml生产环境容器编排
+- 添加Dockerfile.frontend前端容器构建
+- 添加server/Dockerfile代理服务器容器构建
+- 添加deploy-production.sh一键部署脚本
+
+📚 文档更新:
+- 添加PRODUCTION_DEPLOYMENT.md详细部署指南
+- 添加PRODUCTION_FIX_REPORT.md问题修复报告
+- 添加verify-fix.js修复验证脚本
+
+🧪 测试验证:
+- 通过Playwright自动化测试验证修复效果
+- 确认生产环境AI功能完全可用
+- 保持开发环境兼容性"
+
+# 4. 推送到GitHub
+git push origin main
+
+# 5. 查看提交历史（可选）
+git log --oneline -5
+
+# 6. 查看远程仓库地址（可选）
+git remote get-url origin

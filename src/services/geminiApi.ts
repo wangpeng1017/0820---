@@ -32,10 +32,17 @@ export interface ReportSection {
   }[]
 }
 
+// 获取API基础URL
+const getApiBaseUrl = () => {
+  // 在生产环境中使用相对路径，在开发环境中使用localhost
+  return import.meta.env.PROD ? '' : 'http://localhost:3002'
+}
+
 // 通过代理服务器调用Google Gemini API生成报告
 export async function generateIntelligentReport(request: ReportGenerationRequest): Promise<ReportGenerationResponse> {
   try {
-    const response = await fetch('http://localhost:3002/api/generate-report', {
+    const apiBaseUrl = getApiBaseUrl()
+    const response = await fetch(`${apiBaseUrl}/api/generate-report`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
