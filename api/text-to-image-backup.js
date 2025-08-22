@@ -14,19 +14,19 @@ const VOLCENGINE_CONFIG = {
 // 解码base64编码的密钥（如果需要）
 function decodeBase64IfNeeded(str) {
   if (!str) return str
-  
+
   try {
     // 检查是否是base64编码
     if (str.length > 20 && /^[A-Za-z0-9+/]+=*$/.test(str)) {
       const decoded = Buffer.from(str, 'base64').toString('utf-8')
-      
+
       // 验证解码后的内容是否包含有效字符
       if (decoded.length > 10 && !decoded.includes('\u0000') && decoded.trim().length > 0) {
         console.log(`🔑 解码密钥: ${str.substring(0, 10)}... -> ${decoded.substring(0, 10)}...`)
         return decoded
       }
     }
-    
+
     // 如果不是base64或解码失败，直接返回原值
     console.log(`🔑 使用原始密钥: ${str.substring(0, 10)}...`)
     return str
@@ -43,23 +43,23 @@ VOLCENGINE_CONFIG.secretAccessKey = decodeBase64IfNeeded(VOLCENGINE_CONFIG.secre
 // 验证API密钥配置
 function validateApiKeys() {
   const issues = []
-  
+
   if (!VOLCENGINE_CONFIG.accessKeyId) {
     issues.push('VITE_VOLCENGINE_ACCESS_KEY_ID 未配置')
   } else if (VOLCENGINE_CONFIG.accessKeyId.length < 10) {
     issues.push('VITE_VOLCENGINE_ACCESS_KEY_ID 长度不足')
   }
-  
+
   if (!VOLCENGINE_CONFIG.secretAccessKey) {
     issues.push('VITE_VOLCENGINE_SECRET_ACCESS_KEY 未配置')
   } else if (VOLCENGINE_CONFIG.secretAccessKey.length < 10) {
     issues.push('VITE_VOLCENGINE_SECRET_ACCESS_KEY 长度不足')
   }
-  
+
   if (issues.length > 0) {
     throw new Error(`API密钥配置错误: ${issues.join(', ')}`)
   }
-  
+
   console.log('✅ API密钥验证通过')
 }
 
@@ -101,108 +101,72 @@ function createVolcengineSignature(method, uri, query, headers, payload, timesta
   ].join('\n')
   
   // 3. 计算签名
-  const kDate = crypto.createHmac('sha256', `HMAC-SHA256${VOLCENGINE_CONFIG.secretAccessKey}`).update(date).digest()
+  const kDate = crypto.createHmac('sha256', VOLCENGINE_CONFIG.secretAccessKey).update(date).digest()
   const kRegion = crypto.createHmac('sha256', kDate).update(VOLCENGINE_CONFIG.region).digest()
   const kService = crypto.createHmac('sha256', kRegion).update(VOLCENGINE_CONFIG.service).digest()
   const kSigning = crypto.createHmac('sha256', kService).update('request').digest()
   const signature = crypto.createHmac('sha256', kSigning).update(stringToSign).digest('hex')
   
-  return `HMAC-SHA256 Credential=${VOLCENGINE_CONFIG.accessKeyId}/${credentialScope}, SignedHeaders=${signedHeaders}, Signature=${signature}`
+  return signature
 }
 
-// 调用火山引擎即梦AI 2.1图生图API
-async function callVolcengineImageToImage(image, prompt, style = 'general', options = {}) {
+// 创建火山引擎API请求头
+function createVolcengineHeaders(payload) {
   const timestamp = new Date().toISOString().replace(/[:\-]|\.\d{3}/g, '')
+  const date = timestamp.substr(0, 8)
+  const hashedPayload = crypto.createHash('sha256').update(payload).digest('hex')
   
-  // 构建请求参数 - 基于即梦AI 2.1规范
-  const requestBody = {
-    req_key: `img2img_${Date.now()}`,
-    prompt: prompt,
-    binary_data_base64: [image], // 输入图片的base64数据
-    model_version: options.model_version || 'general_v1.4',
-    width: options.width || 512,
-    height: options.height || 512,
-    scale: options.scale || 7.5,
-    seed: options.seed || Math.floor(Math.random() * 1000000),
-    ddim_steps: options.ddim_steps || 25,
-    strength: options.strength || 0.8, // 图生图特有参数，控制变化程度
-    style_term: style || '',
-    return_url: false, // 返回base64编码的图片数据
-    logo_info: {
-      add_logo: false,
-      position: 0,
-      language: 0,
-      opacity: 0.3
-    }
-  }
-
-  const payload = JSON.stringify(requestBody)
-  
-  // 构建请求头
   const headers = {
     'Content-Type': 'application/json',
     'Host': VOLCENGINE_CONFIG.host,
     'X-Date': timestamp,
-    'X-Content-Sha256': crypto.createHash('sha256').update(payload).digest('hex')
+    'X-Content-Sha256': hashedPayload
   }
+  
+  const signature = createVolcengineSignature('POST', '/', `Action=CVProcess&Version=${VOLCENGINE_CONFIG.version}`, headers, payload, timestamp)
+  
+  const credentialScope = `${date}/${VOLCENGINE_CONFIG.region}/${VOLCENGINE_CONFIG.service}/request`
+  const authorization = `HMAC-SHA256 Credential=${VOLCENGINE_CONFIG.accessKeyId}/${credentialScope}, SignedHeaders=content-type;host;x-content-sha256;x-date, Signature=${signature}`
+  
+  headers['Authorization'] = authorization
+  
+  return headers
+}
 
-  // 生成签名
-  const signature = createVolcengineSignature(
-    'POST',
-    '/api/v1/img2img_highres',
-    '',
-    headers,
-    payload,
-    timestamp
-  )
-
-  headers['Authorization'] = signature
-
-  console.log('🚀 发送图生图请求到火山引擎即梦AI 2.1')
-  console.log('📍 请求URL:', `https://${VOLCENGINE_CONFIG.host}/api/v1/img2img_highres`)
-  console.log('📝 请求参数:', {
-    ...requestBody,
-    binary_data_base64: ['[图片数据已隐藏]'] // 隐藏图片数据以减少日志
+// 火山引擎文生图API调用
+async function callVolcengineTextToImage(prompt, style = 'general') {
+  const payload = JSON.stringify({
+    req_key: 'jimeng_high_aes_general_v21_L',
+    prompt: prompt,
+    return_url: true
   })
-
+  
+  const headers = createVolcengineHeaders(payload)
+  const url = `https://${VOLCENGINE_CONFIG.host}/?Action=CVProcess&Version=${VOLCENGINE_CONFIG.version}`
+  
+  console.log('🚀 调用火山引擎文生图API:', { prompt, style })
+  
   try {
-    const response = await fetch(`https://${VOLCENGINE_CONFIG.host}/api/v1/img2img_highres`, {
+    const response = await fetch(url, {
       method: 'POST',
-      headers: headers,
-      body: payload,
-      timeout: 60000 // 60秒超时
+      headers,
+      body: payload
     })
-
-    console.log('📡 API响应状态:', response.status, response.statusText)
-
+    
+    console.log('📡 API响应状态:', response.status)
+    
     if (!response.ok) {
       const errorText = await response.text()
-      console.error('❌ API响应错误:', errorText)
-      throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`)
+      console.error('❌ API错误响应:', errorText)
+      throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`)
     }
-
+    
     const result = await response.json()
     console.log('✅ API响应成功')
-
-    // 处理响应数据 - 基于即梦AI 2.1响应格式
-    if (result.data && result.data.binary_data_base64) {
-      return {
-        image: result.data.binary_data_base64[0],
-        seed: result.data.seed || requestBody.seed,
-        model_version: result.data.model_version || requestBody.model_version
-      }
-    } else if (result.binary_data_base64) {
-      return {
-        image: result.binary_data_base64[0],
-        seed: result.seed || requestBody.seed,
-        model_version: result.model_version || requestBody.model_version
-      }
-    } else {
-      console.error('❌ 响应数据格式异常:', result)
-      throw new Error('响应数据中未找到图片数据')
-    }
+    
+    return result
   } catch (error) {
-    console.error('❌ 火山引擎即梦AI 图生图API调用失败:', error)
+    console.error('❌ 火山引擎API调用失败:', error)
     throw error
   }
 }
@@ -224,94 +188,64 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
   }
-
+  
   try {
     // 验证API密钥配置
     try {
       validateApiKeys()
     } catch (keyError) {
       console.error('❌ API密钥验证失败:', keyError.message)
-      return res.status(500).json({ 
+      return res.status(500).json({
         success: false,
-        error: `API密钥配置错误: ${keyError.message}` 
+        error: `API密钥配置错误: ${keyError.message}`
       })
     }
-    
+
     // 解析JSON body（Vercel serverless函数需要手动解析）
     let body
     try {
       body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body
     } catch (parseError) {
       console.error('❌ JSON解析错误:', parseError)
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        error: 'Invalid JSON format' 
+        error: 'Invalid JSON format'
       })
     }
 
-    const { 
-      image, 
-      prompt, 
-      style, 
-      model_version = 'general_v1.4',
-      width = 512,
-      height = 512,
-      scale = 7.5,
-      seed = Math.floor(Math.random() * 1000000),
-      ddim_steps = 25,
-      strength = 0.8,
-      style_term = ''
-    } = body
+    const { prompt, style, model_version, width, height, scale, seed, ddim_steps, style_term } = body
 
-    // 验证必需参数
-    if (!image || typeof image !== 'string' || image.trim().length === 0) {
-      return res.status(400).json({ 
-        success: false,
-        error: '缺少有效的image参数' 
-      })
-    }
-    
     if (!prompt || typeof prompt !== 'string' || prompt.trim().length === 0) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        error: '缺少有效的prompt参数' 
+        error: '缺少有效的prompt参数'
       })
     }
-    
-    console.log('📝 收到图生图请求:', { 
+
+    console.log('📝 收到文生图请求:', {
       prompt: prompt.substring(0, 100) + (prompt.length > 100 ? '...' : ''),
       style,
       model_version,
       width,
       height,
       scale,
-      ddim_steps,
-      strength,
-      imageSize: `${image.length} characters`
+      ddim_steps
     })
-    
-    const result = await callVolcengineImageToImage(image, prompt, style, {
-      model_version,
-      width,
-      height,
-      scale,
-      seed,
-      ddim_steps,
-      strength
-    })
-    
-    console.log('✅ 图生图请求处理成功')
+
+    const result = await callVolcengineTextToImage(prompt, style)
+
+    console.log('✅ 文生图请求处理成功')
     res.json({
       success: true,
       data: result
     })
   } catch (error) {
-    console.error('❌ 图生图处理失败:', error)
-    
+    console.error('❌ 文生图处理失败:', error)
+
     // 提供更详细的错误信息
     let errorMessage = error.message || '未知错误'
     let statusCode = 500
-    
+
     if (error.message.includes('API密钥')) {
       statusCode = 500
       errorMessage = 'API密钥配置错误，请检查环境变量'
@@ -322,7 +256,7 @@ export default async function handler(req, res) {
       statusCode = 504
       errorMessage = 'API调用超时，请稍后重试'
     }
-    
+
     res.status(statusCode).json({
       success: false,
       error: errorMessage,
