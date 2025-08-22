@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create Test Image</title>
+</head>
+<body>
+    <canvas id="canvas" width="200" height="200"></canvas>
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // 创建一个简单的测试图片
+        ctx.fillStyle = '#4CAF50';
+        ctx.fillRect(0, 0, 200, 200);
+        
+        ctx.fillStyle = '#FFF';
+        ctx.font = '20px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Test Image', 100, 100);
+        ctx.fillText('for Upload', 100, 130);
+        
+        // 转换为blob并下载
+        canvas.toBlob(function(blob) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'test-image.png';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+    </script>
+</body>
+</html>
