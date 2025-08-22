@@ -13,17 +13,25 @@ const VOLCENGINE_CONFIG = {
 
 // 解码base64编码的密钥（如果需要）
 function decodeBase64IfNeeded(str) {
+  if (!str) return str
+
   try {
     // 检查是否是base64编码
-    if (str && str.length > 20 && /^[A-Za-z0-9+/]+=*$/.test(str)) {
+    if (str.length > 20 && /^[A-Za-z0-9+/]+=*$/.test(str)) {
       const decoded = Buffer.from(str, 'base64').toString('utf-8')
-      // 如果解码后的字符串看起来像密钥，则使用解码后的值
-      if (decoded.length > 10) {
+
+      // 验证解码后的内容是否包含有效字符
+      if (decoded.length > 10 && !decoded.includes('\u0000') && decoded.trim().length > 0) {
+        console.log(`🔑 解码密钥: ${str.substring(0, 10)}... -> ${decoded.substring(0, 10)}...`)
         return decoded
       }
     }
+
+    // 如果不是base64或解码失败，直接返回原值
+    console.log(`🔑 使用原始密钥: ${str.substring(0, 10)}...`)
     return str
   } catch (error) {
+    console.error('🔑 密钥解码失败:', error.message)
     return str
   }
 }
@@ -31,6 +39,29 @@ function decodeBase64IfNeeded(str) {
 // 更新配置以使用解码后的密钥
 VOLCENGINE_CONFIG.accessKeyId = decodeBase64IfNeeded(VOLCENGINE_CONFIG.accessKeyId)
 VOLCENGINE_CONFIG.secretAccessKey = decodeBase64IfNeeded(VOLCENGINE_CONFIG.secretAccessKey)
+
+// 验证API密钥配置
+function validateApiKeys() {
+  const issues = []
+
+  if (!VOLCENGINE_CONFIG.accessKeyId) {
+    issues.push('VITE_VOLCENGINE_ACCESS_KEY_ID 未配置')
+  } else if (VOLCENGINE_CONFIG.accessKeyId.length < 10) {
+    issues.push('VITE_VOLCENGINE_ACCESS_KEY_ID 长度不足')
+  }
+
+  if (!VOLCENGINE_CONFIG.secretAccessKey) {
+    issues.push('VITE_VOLCENGINE_SECRET_ACCESS_KEY 未配置')
+  } else if (VOLCENGINE_CONFIG.secretAccessKey.length < 10) {
+    issues.push('VITE_VOLCENGINE_SECRET_ACCESS_KEY 长度不足')
+  }
+
+  if (issues.length > 0) {
+    throw new Error(`API密钥配置错误: ${issues.join(', ')}`)
+  }
+
+  console.log('✅ API密钥验证通过')
+}
 
 // 火山引擎API v4签名算法
 function createVolcengineSignature(method, uri, query, headers, payload, timestamp) {
@@ -121,13 +152,27 @@ export default async function handler(req, res) {
   }
   
   try {
+    // 验证API密钥配置
+    try {
+      validateApiKeys()
+    } catch (keyError) {
+      console.error('❌ API密钥验证失败:', keyError.message)
+      return res.status(500).json({
+        success: false,
+        error: `API密钥配置错误: ${keyError.message}`
+      })
+    }
+
     // 解析JSON body（Vercel serverless函数需要手动解析）
     let body
     try {
       body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body
     } catch (parseError) {
-      console.error('JSON解析错误:', parseError)
-      return res.status(400).json({ error: 'Invalid JSON' })
+      console.error('❌ JSON解析错误:', parseError)
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid JSON format'
+      })
     }
 
     const {
@@ -144,14 +189,18 @@ export default async function handler(req, res) {
       style_term = ''
     } = body
 
-    if (!image || !prompt) {
-      return res.status(400).json({ error: '缺少image或prompt参数' })
+    // 验证必需参数
+    if (!image || typeof image !== 'string' || image.trim().length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: '缺少有效的image参数'
+      })
     }
 
-    // 验证API密钥
-    if (!VOLCENGINE_CONFIG.accessKeyId || !VOLCENGINE_CONFIG.secretAccessKey) {
-      return res.status(500).json({
-        error: '火山引擎API密钥未配置，请检查环境变量VITE_VOLCENGINE_ACCESS_KEY_ID和VITE_VOLCENGINE_SECRET_ACCESS_KEY'
+    if (!prompt || typeof prompt !== 'string' || prompt.trim().length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: '缺少有效的prompt参数'
       })
     }
 
