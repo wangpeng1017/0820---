@@ -11,6 +11,27 @@ const VOLCENGINE_CONFIG = {
   version: '2022-08-31'
 }
 
+// 解码base64编码的密钥（如果需要）
+function decodeBase64IfNeeded(str) {
+  try {
+    // 检查是否是base64编码
+    if (str && str.length > 20 && /^[A-Za-z0-9+/]+=*$/.test(str)) {
+      const decoded = Buffer.from(str, 'base64').toString('utf-8')
+      // 如果解码后的字符串看起来像密钥，则使用解码后的值
+      if (decoded.length > 10) {
+        return decoded
+      }
+    }
+    return str
+  } catch (error) {
+    return str
+  }
+}
+
+// 更新配置以使用解码后的密钥
+VOLCENGINE_CONFIG.accessKeyId = decodeBase64IfNeeded(VOLCENGINE_CONFIG.accessKeyId)
+VOLCENGINE_CONFIG.secretAccessKey = decodeBase64IfNeeded(VOLCENGINE_CONFIG.secretAccessKey)
+
 // 火山引擎API v4签名算法
 function createVolcengineSignature(method, uri, query, headers, payload, timestamp) {
   const algorithm = 'HMAC-SHA256'
@@ -109,42 +130,92 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Invalid JSON' })
     }
 
-    const { image, prompt, style } = body
+    const {
+      image,
+      prompt,
+      style,
+      model_version = 'general_v1.4',
+      width = 512,
+      height = 512,
+      scale = 7.5,
+      seed = Math.floor(Math.random() * 1000000),
+      ddim_steps = 25,
+      strength = 0.8,
+      style_term = ''
+    } = body
 
     if (!image || !prompt) {
       return res.status(400).json({ error: '缺少image或prompt参数' })
     }
 
-    console.log('🖼️ 收到图生图请求:', { image: image.substring(0, 50) + '...', prompt, style })
+    // 验证API密钥
+    if (!VOLCENGINE_CONFIG.accessKeyId || !VOLCENGINE_CONFIG.secretAccessKey) {
+      return res.status(500).json({
+        error: '火山引擎API密钥未配置，请检查环境变量VITE_VOLCENGINE_ACCESS_KEY_ID和VITE_VOLCENGINE_SECRET_ACCESS_KEY'
+      })
+    }
+
+    console.log('🖼️ 收到图生图请求:', {
+      image: image.substring(0, 50) + '...',
+      prompt,
+      style,
+      width,
+      height,
+      scale,
+      ddim_steps,
+      strength
+    })
 
     // 图生图功能实现
     const payload = JSON.stringify({
       req_key: 'jimeng_high_aes_img2img_v21_L',
-      prompt: prompt,
+      prompt: prompt + (style_term ? `, ${style_term}` : ''),
       image_url: image, // 前端传来的是base64或URL
+      width: width,
+      height: height,
+      scale: scale,
+      seed: seed,
+      ddim_steps: ddim_steps,
+      strength: strength,
       return_url: true
     })
     
     const headers = createVolcengineHeaders(payload)
     const url = `https://${VOLCENGINE_CONFIG.host}/?Action=CVProcess&Version=${VOLCENGINE_CONFIG.version}`
     
+    console.log('🚀 调用火山引擎图生图API...')
+
     const response = await fetch(url, {
       method: 'POST',
       headers,
       body: payload
     })
-    
+
+    console.log('📡 API响应状态:', response.status)
+
     if (!response.ok) {
       const errorText = await response.text()
+      console.error('❌ API错误响应:', errorText)
       throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`)
     }
-    
+
     const result = await response.json()
-    
-    res.json({
-      success: true,
-      data: result
-    })
+    console.log('✅ API响应成功:', JSON.stringify(result, null, 2))
+
+    // 检查响应数据结构
+    if (result && result.data && result.data.image_urls && result.data.image_urls.length > 0) {
+      res.json({
+        success: true,
+        data: {
+          data: {
+            image_urls: result.data.image_urls
+          }
+        }
+      })
+    } else {
+      console.error('❌ API响应格式错误:', result)
+      throw new Error('API响应中没有生成的图片')
+    }
   } catch (error) {
     console.error('图生图处理失败:', error)
     res.status(500).json({

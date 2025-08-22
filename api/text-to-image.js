@@ -11,6 +11,27 @@ const VOLCENGINE_CONFIG = {
   version: '2022-08-31'
 }
 
+// 解码base64编码的密钥（如果需要）
+function decodeBase64IfNeeded(str) {
+  try {
+    // 检查是否是base64编码
+    if (str && str.length > 20 && /^[A-Za-z0-9+/]+=*$/.test(str)) {
+      const decoded = Buffer.from(str, 'base64').toString('utf-8')
+      // 如果解码后的字符串看起来像密钥，则使用解码后的值
+      if (decoded.length > 10) {
+        return decoded
+      }
+    }
+    return str
+  } catch (error) {
+    return str
+  }
+}
+
+// 更新配置以使用解码后的密钥
+VOLCENGINE_CONFIG.accessKeyId = decodeBase64IfNeeded(VOLCENGINE_CONFIG.accessKeyId)
+VOLCENGINE_CONFIG.secretAccessKey = decodeBase64IfNeeded(VOLCENGINE_CONFIG.secretAccessKey)
+
 // 火山引擎API v4签名算法
 function createVolcengineSignature(method, uri, query, headers, payload, timestamp) {
   const algorithm = 'HMAC-SHA256'

@@ -108,7 +108,9 @@ const PackagingDesign: React.FC = () => {
   // 火山引擎API相关状态
   const [textToImageLoading, setTextToImageLoading] = useState(false)
   const [imageToImageLoading, setImageToImageLoading] = useState(false)
-  const [generatedImage, setGeneratedImage] = useState<string>('')
+  // 分离文生图和图生图的状态
+  const [textGeneratedImage, setTextGeneratedImage] = useState<string>('')
+  const [imageGeneratedImage, setImageGeneratedImage] = useState<string>('')
   const [textPrompt, setTextPrompt] = useState('')
   const [uploadedImage, setUploadedImage] = useState<File | null>(null)
   const [imagePrompt, setImagePrompt] = useState('')
@@ -132,7 +134,7 @@ const PackagingDesign: React.FC = () => {
         style_term: 'packaging design, product design, commercial design'
       })
 
-      setGeneratedImage(base64Image)
+      setTextGeneratedImage(base64Image)
       message.success('图像生成成功！')
     } catch (error) {
       console.error('文生图失败:', error)
@@ -175,7 +177,7 @@ const PackagingDesign: React.FC = () => {
         style_term: 'packaging design, product design, commercial design'
       })
 
-      setGeneratedImage(base64Image)
+      setImageGeneratedImage(base64Image)
       message.success('图像转换成功！')
     } catch (error) {
       console.error('图生图失败:', error)
@@ -192,11 +194,24 @@ const PackagingDesign: React.FC = () => {
     }
   }
 
-  // 下载生成的图像
-  const handleDownloadImage = async () => {
-    if (generatedImage) {
+  // 下载文生图生成的图像
+  const handleDownloadTextImage = async () => {
+    if (textGeneratedImage) {
       try {
-        await downloadImageFromUrl(generatedImage, `packaging-design-${Date.now()}.png`)
+        await downloadImageFromUrl(textGeneratedImage, `text-to-image-${Date.now()}.png`)
+        message.success('图像下载成功！')
+      } catch (error) {
+        console.error('下载失败:', error)
+        message.error('图像下载失败，请稍后重试')
+      }
+    }
+  }
+
+  // 下载图生图生成的图像
+  const handleDownloadImageImage = async () => {
+    if (imageGeneratedImage) {
+      try {
+        await downloadImageFromUrl(imageGeneratedImage, `image-to-image-${Date.now()}.png`)
         message.success('图像下载成功！')
       } catch (error) {
         console.error('下载失败:', error)
@@ -896,9 +911,9 @@ const PackagingDesign: React.FC = () => {
                       borderRadius: 8,
                       overflow: 'hidden'
                     }}>
-                      {generatedImage ? (
+                      {textGeneratedImage ? (
                         <img
-                          src={generatedImage}
+                          src={textGeneratedImage}
                           alt="Generated packaging design"
                           style={{
                             maxWidth: '100%',
@@ -917,12 +932,12 @@ const PackagingDesign: React.FC = () => {
                   <Space style={{ marginTop: 16 }}>
                     <Button
                       icon={<DownloadOutlined />}
-                      onClick={handleDownloadImage}
-                      disabled={!generatedImage}
+                      onClick={handleDownloadTextImage}
+                      disabled={!textGeneratedImage}
                     >
                       下载图片
                     </Button>
-                    <Button icon={<EditOutlined />} disabled={!generatedImage}>
+                    <Button icon={<EditOutlined />} disabled={!textGeneratedImage}>
                       编辑优化
                     </Button>
                     <Button
@@ -1015,9 +1030,9 @@ const PackagingDesign: React.FC = () => {
                       borderRadius: 8,
                       overflow: 'hidden'
                     }}>
-                      {generatedImage ? (
+                      {imageGeneratedImage ? (
                         <img
-                          src={generatedImage}
+                          src={imageGeneratedImage}
                           alt="Generated packaging design"
                           style={{
                             maxWidth: '100%',
@@ -1036,12 +1051,12 @@ const PackagingDesign: React.FC = () => {
                   <Space style={{ marginTop: 16 }}>
                     <Button
                       icon={<DownloadOutlined />}
-                      onClick={handleDownloadImage}
-                      disabled={!generatedImage}
+                      onClick={handleDownloadImageImage}
+                      disabled={!imageGeneratedImage}
                     >
                       下载图片
                     </Button>
-                    <Button icon={<EditOutlined />} disabled={!generatedImage}>
+                    <Button icon={<EditOutlined />} disabled={!imageGeneratedImage}>
                       编辑优化
                     </Button>
                     <Button
