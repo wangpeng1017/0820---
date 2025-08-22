@@ -1097,12 +1097,24 @@ ${generatedReport.conclusion}
             label="报告类型"
             rules={[{ required: true, message: '请选择报告类型' }]}
           >
-            <Select placeholder="请选择报告类型">
+            <Select
+              placeholder="请选择报告类型"
+              optionLabelProp="label"
+              dropdownStyle={{ maxWidth: '400px' }}
+            >
               {Object.entries(REPORT_TEMPLATES).map(([key, template]) => (
-                <Option key={key} value={key}>
-                  <div>
-                    <div style={{ fontWeight: 'bold' }}>{template.name}</div>
-                    <div style={{ fontSize: '12px', color: '#666' }}>{template.description}</div>
+                <Option key={key} value={key} label={template.name}>
+                  <div style={{ padding: '4px 0' }}>
+                    <div style={{ fontWeight: 'bold', marginBottom: '2px' }}>{template.name}</div>
+                    <div style={{
+                      fontSize: '12px',
+                      color: '#666',
+                      lineHeight: '1.4',
+                      whiteSpace: 'normal',
+                      wordBreak: 'break-word'
+                    }}>
+                      {template.description}
+                    </div>
                   </div>
                 </Option>
               ))}
@@ -1113,12 +1125,25 @@ ${generatedReport.conclusion}
             label="分析维度"
             rules={[{ required: true, message: '请至少选择一个分析维度' }]}
           >
-            <Select mode="multiple" placeholder="请选择分析维度">
+            <Select
+              mode="multiple"
+              placeholder="请选择分析维度"
+              optionLabelProp="label"
+              dropdownStyle={{ maxWidth: '400px' }}
+            >
               {Object.entries(ANALYSIS_DIMENSIONS).map(([key, dimension]) => (
-                <Option key={key} value={key}>
-                  <div>
-                    <div style={{ fontWeight: 'bold' }}>{dimension.name}</div>
-                    <div style={{ fontSize: '12px', color: '#666' }}>{dimension.description}</div>
+                <Option key={key} value={key} label={dimension.name}>
+                  <div style={{ padding: '4px 0' }}>
+                    <div style={{ fontWeight: 'bold', marginBottom: '2px' }}>{dimension.name}</div>
+                    <div style={{
+                      fontSize: '12px',
+                      color: '#666',
+                      lineHeight: '1.4',
+                      whiteSpace: 'normal',
+                      wordBreak: 'break-word'
+                    }}>
+                      {dimension.description}
+                    </div>
                   </div>
                 </Option>
               ))}
