@@ -38,6 +38,8 @@ import ReportGeneration from '../../pages/ReportGeneration'
 import AuxiliaryMaterialManagement from '../../pages/AuxiliaryMaterialManagement'
 import OnlineExperiment from '../../pages/OnlineExperiment'
 import ComprehensiveManagement from '../../pages/ComprehensiveManagement'
+import CigarDesign from '../../pages/CigarDesign'
+import NewProductDesign from '../../pages/NewProductDesign'
 
 const { Header, Sider, Content } = Layout
 
@@ -176,6 +178,18 @@ const MainLayout: React.FC = () => {
       icon: <FileTextOutlined />,
       label: '定型与输出数字化',
       path: '/report-generation'
+    },
+    {
+      key: 'cigar-design',
+      icon: <ExperimentOutlined />,
+      label: '雪茄烟数字化设计',
+      path: '/cigar-design'
+    },
+    {
+      key: 'new-product-design',
+      icon: <BulbOutlined />,
+      label: '新型烟草数字化设计',
+      path: '/new-product-design'
     }
   ]
 
@@ -324,6 +338,8 @@ const MainLayout: React.FC = () => {
             <Route path="/auxiliary-material-management/*" element={<AuxiliaryMaterialManagement />} />
             <Route path="/online-experiment/*" element={<OnlineExperiment />} />
             <Route path="/comprehensive-management/*" element={<ComprehensiveManagement />} />
+            <Route path="/cigar-design/*" element={<CigarDesign />} />
+            <Route path="/new-product-design/*" element={<NewProductDesign />} />
             {/* 所有其他路径都重定向到dashboard */}
             <Route path="*" element={<Dashboard />} />
           </Routes>
