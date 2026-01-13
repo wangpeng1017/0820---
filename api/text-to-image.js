@@ -1,32 +1,45 @@
 const fetch = require('node-fetch')
 const crypto = require('crypto')
 
-// 火山引擎即梦AI 2.1 API配置
+// 火山引擎视觉AI服务配置 - 基于官方Python SDK
 const VOLCENGINE_CONFIG = {
   accessKeyId: process.env.VITE_VOLCENGINE_ACCESS_KEY_ID || '',
   secretAccessKey: process.env.VITE_VOLCENGINE_SECRET_ACCESS_KEY || '',
   region: 'cn-north-1',
-  service: 'ml_maas',
-  host: 'maas-api.ml-platform-cn-beijing.volces.com',
-  version: '2023-12-01'
+  service: 'cv',
+  host: 'visual.volcengineapi.com',
+  version: '2022-08-31',
+  endpoint: 'https://visual.volcengineapi.com'
 }
 
-// 解码base64编码的密钥（如果需要）
+// 解码base64编码的密钥（支持二次解码）
 function decodeBase64IfNeeded(str) {
   if (!str) return str
-  
+
   try {
     // 检查是否是base64编码
     if (str.length > 20 && /^[A-Za-z0-9+/]+=*$/.test(str)) {
       const decoded = Buffer.from(str, 'base64').toString('utf-8')
-      
+
+      // 检查解码结果是否还是base64格式（需要二次解码）
+      if (decoded.length > 20 && /^[A-Za-z0-9+/]+=*$/.test(decoded)) {
+        try {
+          const doubleDecoded = Buffer.from(decoded, 'base64').toString('utf-8')
+          console.log(`🔑 二次解码密钥: ${str.substring(0, 10)}... -> ${decoded.substring(0, 10)}... -> ${doubleDecoded.substring(0, 10)}...`)
+          return doubleDecoded
+        } catch (error) {
+          console.log(`🔑 二次解码失败，使用一次解码结果: ${decoded.substring(0, 10)}...`)
+          return decoded
+        }
+      }
+
       // 验证解码后的内容是否包含有效字符
       if (decoded.length > 10 && !decoded.includes('\u0000') && decoded.trim().length > 0) {
         console.log(`🔑 解码密钥: ${str.substring(0, 10)}... -> ${decoded.substring(0, 10)}...`)
         return decoded
       }
     }
-    
+
     // 如果不是base64或解码失败，直接返回原值
     console.log(`🔑 使用原始密钥: ${str.substring(0, 10)}...`)
     return str
@@ -63,25 +76,22 @@ function validateApiKeys() {
   console.log('✅ API密钥验证通过')
 }
 
-// 火山引擎API v4签名算法
+// 火山引擎API v4签名算法 - 基于官方Python SDK
 function createVolcengineSignature(method, uri, query, headers, payload, timestamp) {
   const algorithm = 'HMAC-SHA256'
   const date = timestamp.substr(0, 8)
   const credentialScope = `${date}/${VOLCENGINE_CONFIG.region}/${VOLCENGINE_CONFIG.service}/request`
-  
-  // 1. 创建规范请求
-  const canonicalHeaders = Object.keys(headers)
-    .sort()
-    .map(key => `${key.toLowerCase()}:${headers[key].toString().trim()}`)
-    .join('\n') + '\n'
-  
-  const signedHeaders = Object.keys(headers)
-    .sort()
-    .map(key => key.toLowerCase())
-    .join(';')
-  
+
+  // 1. 创建规范请求 - 按照官方SDK的顺序
+  const canonicalHeaders = 'content-type:' + headers['Content-Type'] + '\n' +
+                          'host:' + headers['Host'] + '\n' +
+                          'x-content-sha256:' + headers['X-Content-Sha256'] + '\n' +
+                          'x-date:' + headers['X-Date'] + '\n'
+
+  const signedHeaders = 'content-type;host;x-content-sha256;x-date'
+
   const hashedPayload = crypto.createHash('sha256').update(payload || '').digest('hex')
-  
+
   const canonicalRequest = [
     method.toUpperCase(),
     uri,
@@ -90,7 +100,7 @@ function createVolcengineSignature(method, uri, query, headers, payload, timesta
     signedHeaders,
     hashedPayload
   ].join('\n')
-  
+
   // 2. 创建待签名字符串
   const hashedCanonicalRequest = crypto.createHash('sha256').update(canonicalRequest).digest('hex')
   const stringToSign = [
@@ -99,33 +109,44 @@ function createVolcengineSignature(method, uri, query, headers, payload, timesta
     credentialScope,
     hashedCanonicalRequest
   ].join('\n')
-  
-  // 3. 计算签名
-  const kDate = crypto.createHmac('sha256', `HMAC-SHA256${VOLCENGINE_CONFIG.secretAccessKey}`).update(date).digest()
+
+  // 3. 计算签名 - 按照官方SDK的方式
+  const kDate = crypto.createHmac('sha256', VOLCENGINE_CONFIG.secretAccessKey).update(date).digest()
   const kRegion = crypto.createHmac('sha256', kDate).update(VOLCENGINE_CONFIG.region).digest()
   const kService = crypto.createHmac('sha256', kRegion).update(VOLCENGINE_CONFIG.service).digest()
   const kSigning = crypto.createHmac('sha256', kService).update('request').digest()
   const signature = crypto.createHmac('sha256', kSigning).update(stringToSign).digest('hex')
-  
+
   return `HMAC-SHA256 Credential=${VOLCENGINE_CONFIG.accessKeyId}/${credentialScope}, SignedHeaders=${signedHeaders}, Signature=${signature}`
 }
 
-// 调用火山引擎即梦AI 2.1文生图API
+// 调用火山引擎视觉AI服务文生图API - 基于官方Python SDK
 async function callVolcengineTextToImage(prompt, style = 'general') {
   const timestamp = new Date().toISOString().replace(/[:\-]|\.\d{3}/g, '')
-  
-  // 构建请求参数 - 基于即梦AI 2.1规范
+
+  // 构建Query参数 - 基于官方SDK
+  const queryParams = {
+    'Action': 'CVProcess',
+    'Version': VOLCENGINE_CONFIG.version
+  }
+
+  const queryString = Object.keys(queryParams)
+    .sort()
+    .map(key => `${key}=${queryParams[key]}`)
+    .join('&')
+
+  // 构建请求参数 - 基于官方视觉AI服务规范
   const requestBody = {
     req_key: `text2img_${Date.now()}`,
     prompt: prompt,
-    model_version: 'general_v1.4', // 即梦AI 2.1支持的模型版本
+    model_version: 'general_v1.4',
     width: 512,
     height: 512,
     scale: 7.5,
     seed: Math.floor(Math.random() * 1000000),
     ddim_steps: 25,
     style_term: style || '',
-    return_url: false, // 返回base64编码的图片数据
+    return_url: false,
     logo_info: {
       add_logo: false,
       position: 0,
@@ -135,8 +156,8 @@ async function callVolcengineTextToImage(prompt, style = 'general') {
   }
 
   const payload = JSON.stringify(requestBody)
-  
-  // 构建请求头
+
+  // 构建请求头 - 按照官方SDK的格式
   const headers = {
     'Content-Type': 'application/json',
     'Host': VOLCENGINE_CONFIG.host,
@@ -147,8 +168,8 @@ async function callVolcengineTextToImage(prompt, style = 'general') {
   // 生成签名
   const signature = createVolcengineSignature(
     'POST',
-    '/api/v1/text2img_highres',
-    '',
+    '/',
+    queryString,
     headers,
     payload,
     timestamp
@@ -156,12 +177,15 @@ async function callVolcengineTextToImage(prompt, style = 'general') {
 
   headers['Authorization'] = signature
 
-  console.log('🚀 发送文生图请求到火山引擎即梦AI 2.1')
-  console.log('📍 请求URL:', `https://${VOLCENGINE_CONFIG.host}/api/v1/text2img_highres`)
+  const requestUrl = `${VOLCENGINE_CONFIG.endpoint}?${queryString}`
+
+  console.log('🚀 发送文生图请求到火山引擎视觉AI服务')
+  console.log('📍 请求URL:', requestUrl)
+  console.log('📝 Query参数:', queryParams)
   console.log('📝 请求参数:', JSON.stringify(requestBody, null, 2))
 
   try {
-    const response = await fetch(`https://${VOLCENGINE_CONFIG.host}/api/v1/text2img_highres`, {
+    const response = await fetch(requestUrl, {
       method: 'POST',
       headers: headers,
       body: payload,
@@ -179,7 +203,7 @@ async function callVolcengineTextToImage(prompt, style = 'general') {
     const result = await response.json()
     console.log('✅ API响应成功:', JSON.stringify(result, null, 2))
 
-    // 处理响应数据 - 基于即梦AI 2.1响应格式
+    // 处理响应数据 - 基于视觉AI服务响应格式
     if (result.data && result.data.binary_data_base64) {
       return {
         image: result.data.binary_data_base64[0],
@@ -197,7 +221,7 @@ async function callVolcengineTextToImage(prompt, style = 'general') {
       throw new Error('响应数据中未找到图片数据')
     }
   } catch (error) {
-    console.error('❌ 火山引擎即梦AI API调用失败:', error)
+    console.error('❌ 火山引擎视觉AI API调用失败:', error)
     throw error
   }
 }
