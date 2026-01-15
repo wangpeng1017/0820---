@@ -101,8 +101,11 @@ const AuxiliaryMaterialManagement: React.FC = () => {
   const [traceModalVisible, setTraceModalVisible] = useState(false)
   const [qrCodeModalVisible, setQrCodeModalVisible] = useState(false)
 
+
+  const [form] = Form.useForm()
+
   // 模拟辅材主数据
-  const auxiliaryMaterials: AuxiliaryMaterial[] = [
+  const [materialList, setMaterialList] = useState<AuxiliaryMaterial[]>([
     {
       id: 'AM001',
       name: '超薄透气卷烟纸',
@@ -355,7 +358,61 @@ const AuxiliaryMaterialManagement: React.FC = () => {
       creator: '朱材料',
       updater: '马材料'
     }
-  ]
+  ])
+
+  // CRUD 处理函数
+  const handleCreateMaterial = () => {
+    form.validateFields().then(values => {
+      const newMaterial: AuxiliaryMaterial = {
+        id: `AM${(materialList.length + 1).toString().padStart(3, '0')}`,
+        ...values,
+        createTime: new Date().toLocaleString(),
+        updateTime: new Date().toLocaleString(),
+        creator: '当前用户',
+        updater: '当前用户',
+        physicalProperties: {},
+        chemicalProperties: {},
+        qualityRequirements: {}
+      }
+      setMaterialList([...materialList, newMaterial])
+      setModalVisible(false)
+      form.resetFields()
+    })
+  }
+
+  const handleUpdateMaterial = () => {
+    form.validateFields().then(values => {
+      const updatedList = materialList.map(item =>
+        item.id === selectedRecord.id
+          ? { ...item, ...values, updateTime: new Date().toLocaleString() }
+          : item
+      )
+      setMaterialList(updatedList)
+      setModalVisible(false)
+      form.resetFields()
+    })
+  }
+
+  const handleDeleteMaterial = (id: string) => {
+    Modal.confirm({
+      title: '确认删除',
+      content: '确定要删除这个辅材吗？',
+      onOk: () => {
+        setMaterialList(materialList.filter(item => item.id !== id))
+      }
+    })
+  }
+
+  const openModal = (type: 'create' | 'edit' | 'view', record?: any) => {
+    setModalType(type)
+    setSelectedRecord(record || null)
+    if (record && type !== 'create') {
+      form.setFieldsValue(record)
+    } else {
+      form.resetFields()
+    }
+    setModalVisible(true)
+  }
 
   // 模拟标识性材料数据
   const identificationMaterials: IdentificationMaterial[] = [
@@ -454,7 +511,7 @@ const AuxiliaryMaterialManagement: React.FC = () => {
           <Card>
             <Statistic
               title="辅材种类"
-              value={auxiliaryMaterials.length}
+              value={materialList.length}
               prefix={<DatabaseOutlined />}
               valueStyle={{ color: '#1890ff' }}
             />
@@ -464,7 +521,7 @@ const AuxiliaryMaterialManagement: React.FC = () => {
           <Card>
             <Statistic
               title="在用材料"
-              value={auxiliaryMaterials.filter(m => m.status === 'active').length}
+              value={materialList.filter(m => m.status === 'active').length}
               prefix={<CheckCircleOutlined />}
               valueStyle={{ color: '#52c41a' }}
             />
@@ -494,21 +551,19 @@ const AuxiliaryMaterialManagement: React.FC = () => {
 
       <Tabs activeKey={activeTab} onChange={setActiveTab}>
         <TabPane tab="辅材主数据" key="materials" icon={<DatabaseOutlined />}>
-          <Card 
-            title="辅材主数据管理" 
+          <Card
+            title="辅材主数据管理"
             extra={
               <Space>
-                <Button 
+                <Button
                   icon={<UploadOutlined />}
                 >
                   批量导入
                 </Button>
-                <Button 
+                <Button
                   icon={<PlusOutlined />}
                   onClick={() => {
-                    setModalType('create')
-                    setSelectedRecord(null)
-                    setModalVisible(true)
+                    openModal('create')
                   }}
                 >
                   新建辅材
@@ -628,33 +683,29 @@ const AuxiliaryMaterialManagement: React.FC = () => {
                   key: 'action',
                   render: (record: AuxiliaryMaterial) => (
                     <Space size="middle">
-                      <Button 
-                        type="link" 
-                        icon={<EyeOutlined />} 
+                      <Button
+                        type="link"
+                        icon={<EyeOutlined />}
                         size="small"
                         onClick={() => {
-                          setSelectedRecord(record)
-                          setModalType('view')
-                          setModalVisible(true)
+                          openModal('view', record)
                         }}
                       >
                         查看
                       </Button>
-                      <Button 
-                        type="link" 
-                        icon={<EditOutlined />} 
+                      <Button
+                        type="link"
+                        icon={<EditOutlined />}
                         size="small"
                         onClick={() => {
-                          setSelectedRecord(record)
-                          setModalType('edit')
-                          setModalVisible(true)
+                          openModal('edit', record)
                         }}
                       >
                         编辑
                       </Button>
-                      <Button 
-                        type="link" 
-                        icon={<HistoryOutlined />} 
+                      <Button
+                        type="link"
+                        icon={<HistoryOutlined />}
                         size="small"
                         onClick={() => {
                           setSelectedRecord(record)
@@ -667,10 +718,10 @@ const AuxiliaryMaterialManagement: React.FC = () => {
                   )
                 }
               ]}
-              dataSource={auxiliaryMaterials}
+              dataSource={materialList}
               rowKey="id"
               pagination={{
-                total: auxiliaryMaterials.length,
+                total: materialList.length,
                 pageSize: 10,
                 showSizeChanger: true,
                 showQuickJumper: true,
@@ -938,32 +989,36 @@ const AuxiliaryMaterialManagement: React.FC = () => {
                 columns={[
                   { title: '批次号', dataIndex: 'batchNumber', key: 'batchNumber' },
                   { title: '材料名称', dataIndex: 'materialName', key: 'materialName' },
-                  { title: '当前阶段', dataIndex: 'processStage', key: 'processStage', render: (stage: string) => {
-                    const stageNames = {
-                      application: '申请备案',
-                      approval: '审批通过',
-                      design: '设计确认',
-                      printing: '印刷对接',
-                      inspection: '质量检验',
-                      storage: '入库存储',
-                      distribution: '领用分发',
-                      usage: '使用消耗',
-                      disposal: '作废注销'
+                  {
+                    title: '当前阶段', dataIndex: 'processStage', key: 'processStage', render: (stage: string) => {
+                      const stageNames = {
+                        application: '申请备案',
+                        approval: '审批通过',
+                        design: '设计确认',
+                        printing: '印刷对接',
+                        inspection: '质量检验',
+                        storage: '入库存储',
+                        distribution: '领用分发',
+                        usage: '使用消耗',
+                        disposal: '作废注销'
+                      }
+                      return <Tag color="blue">{stageNames[stage as keyof typeof stageNames]}</Tag>
                     }
-                    return <Tag color="blue">{stageNames[stage as keyof typeof stageNames]}</Tag>
-                  }},
+                  },
                   { title: '操作人', dataIndex: 'operator', key: 'operator' },
                   { title: '操作时间', dataIndex: 'operateTime', key: 'operateTime' },
-                  { title: '状态', dataIndex: 'status', key: 'status', render: (status: string) => {
-                    const statusConfigs = {
-                      pending: { color: 'orange', text: '待处理' },
-                      processing: { color: 'blue', text: '处理中' },
-                      completed: { color: 'green', text: '已完成' },
-                      rejected: { color: 'red', text: '已拒绝' }
+                  {
+                    title: '状态', dataIndex: 'status', key: 'status', render: (status: string) => {
+                      const statusConfigs = {
+                        pending: { color: 'orange', text: '待处理' },
+                        processing: { color: 'blue', text: '处理中' },
+                        completed: { color: 'green', text: '已完成' },
+                        rejected: { color: 'red', text: '已拒绝' }
+                      }
+                      const config = statusConfigs[status as keyof typeof statusConfigs]
+                      return <Tag color={config.color}>{config.text}</Tag>
                     }
-                    const config = statusConfigs[status as keyof typeof statusConfigs]
-                    return <Tag color={config.color}>{config.text}</Tag>
-                  }},
+                  },
                   { title: '操作', key: 'action', render: () => <Button type="link" size="small">查看详情</Button> }
                 ]}
                 dataSource={[
@@ -1034,7 +1089,7 @@ const AuxiliaryMaterialManagement: React.FC = () => {
       <Modal
         title={
           modalType === 'create' ? '新建辅材' :
-          modalType === 'edit' ? '编辑辅材' : '辅材详情'
+            modalType === 'edit' ? '编辑辅材' : '辅材详情'
         }
         open={modalVisible}
         onCancel={() => setModalVisible(false)}
@@ -1047,27 +1102,25 @@ const AuxiliaryMaterialManagement: React.FC = () => {
           <Button key="cancel" onClick={() => setModalVisible(false)}>
             取消
           </Button>,
-          <Button key="submit" type="primary">
+          <Button key="submit" type="primary" onClick={modalType === 'create' ? handleCreateMaterial : handleUpdateMaterial}>
             {modalType === 'create' ? '创建' : '保存'}
           </Button>
         ]}
       >
-        <Form layout="vertical">
+        <Form layout="vertical" form={form}>
           <Row gutter={16}>
             <Col span={12}>
-              <Form.Item label="材料名称">
+              <Form.Item label="材料名称" name="name" rules={[{ required: true, message: '请输入材料名称' }]}>
                 <Input
                   placeholder="请输入材料名称"
-                  defaultValue={selectedRecord?.name}
                   disabled={modalType === 'view'}
                 />
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item label="材料类型">
+              <Form.Item label="材料类型" name="type" rules={[{ required: true, message: '请选择材料类型' }]}>
                 <Select
                   placeholder="请选择材料类型"
-                  defaultValue={selectedRecord?.type}
                   disabled={modalType === 'view'}
                 >
                   <Option value="cigarette_paper">卷烟纸</Option>
@@ -1085,11 +1138,10 @@ const AuxiliaryMaterialManagement: React.FC = () => {
 
           <Row gutter={16}>
             <Col span={24}>
-              <Form.Item label="规格说明">
+              <Form.Item label="规格说明" name="specification">
                 <TextArea
                   rows={2}
                   placeholder="请输入规格说明"
-                  defaultValue={selectedRecord?.specification}
                   disabled={modalType === 'view'}
                 />
               </Form.Item>
@@ -1098,10 +1150,9 @@ const AuxiliaryMaterialManagement: React.FC = () => {
 
           <Row gutter={16}>
             <Col span={8}>
-              <Form.Item label="执行标准">
+              <Form.Item label="执行标准" name="standard">
                 <Select
                   placeholder="请选择标准类型"
-                  defaultValue={selectedRecord?.standard}
                   disabled={modalType === 'view'}
                 >
                   <Option value="GB">国标</Option>
@@ -1112,19 +1163,17 @@ const AuxiliaryMaterialManagement: React.FC = () => {
               </Form.Item>
             </Col>
             <Col span={8}>
-              <Form.Item label="标准号">
+              <Form.Item label="标准号" name="standardNumber">
                 <Input
                   placeholder="请输入标准号"
-                  defaultValue={selectedRecord?.standardNumber}
                   disabled={modalType === 'view'}
                 />
               </Form.Item>
             </Col>
             <Col span={8}>
-              <Form.Item label="标准版本">
+              <Form.Item label="标准版本" name="standardVersion">
                 <Input
                   placeholder="请输入标准版本"
-                  defaultValue={selectedRecord?.standardVersion}
                   disabled={modalType === 'view'}
                 />
               </Form.Item>
@@ -1133,19 +1182,17 @@ const AuxiliaryMaterialManagement: React.FC = () => {
 
           <Row gutter={16}>
             <Col span={12}>
-              <Form.Item label="供应商">
+              <Form.Item label="供应商" name="supplier">
                 <Input
                   placeholder="请输入供应商"
-                  defaultValue={selectedRecord?.supplier}
                   disabled={modalType === 'view'}
                 />
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item label="状态">
+              <Form.Item label="状态" name="status">
                 <Select
                   placeholder="请选择状态"
-                  defaultValue={selectedRecord?.status}
                   disabled={modalType === 'view'}
                 >
                   <Option value="active">在用</Option>

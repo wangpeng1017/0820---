@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" style="font-family: 'Songti SC', 'SimSun', serif; background: #fff;">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#333" />
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="400" y="40" font-size="20" font-weight="bold" text-anchor="middle">新品开发全流程 (End-to-End)</text>
+
+  <!-- Swimlanes -->
+  <rect x="50" y="70" width="700" height="120" fill="#f0f5ff" stroke="#ddd" />
+  <text x="70" y="130" font-size="16" font-weight="bold" writing-mode="tb">策划阶段</text>
+  
+  <rect x="50" y="190" width="700" height="120" fill="#f6ffed" stroke="#ddd" />
+  <text x="70" y="250" font-size="16" font-weight="bold" writing-mode="tb">设计阶段</text>
+
+  <rect x="50" y="310" width="700" height="120" fill="#fff7e6" stroke="#ddd" />
+  <text x="70" y="370" font-size="16" font-weight="bold" writing-mode="tb">试制阶段</text>
+
+  <rect x="50" y="430" width="700" height="120" fill="#f9f0ff" stroke="#ddd" />
+  <text x="70" y="490" font-size="16" font-weight="bold" writing-mode="tb">上市阶段</text>
+
+  <!-- Nodes -->
+  <!-- Strategy -->
+  <rect x="120" y="100" width="100" height="60" rx="5" fill="#fff" stroke="#1890ff" />
+  <text x="170" y="135" font-size="14" text-anchor="middle">市场发起</text>
+
+  <rect x="280" y="100" width="100" height="60" rx="5" fill="#fff" stroke="#1890ff" />
+  <text x="330" y="135" font-size="14" text-anchor="middle">需求分析</text>
+
+  <rect x="440" y="100" width="100" height="60" rx="5" fill="#fff" stroke="#1890ff" />
+  <text x="490" y="135" font-size="14" text-anchor="middle">概念验证</text>
+
+  <rect x="600" y="100" width="100" height="60" rx="5" fill="#fff" stroke="#1890ff" />
+  <text x="650" y="135" font-size="14" text-anchor="middle">立项审批</text>
+
+  <!-- Design -->
+  <rect x="120" y="220" width="260" height="60" rx="5" fill="#fff" stroke="#52c41a" />
+  <text x="250" y="255" font-size="14" text-anchor="middle">并行设计 (配方/香精/辅材)</text>
+
+  <rect x="440" y="220" width="100" height="60" rx="5" fill="#fff" stroke="#52c41a" />
+  <text x="490" y="255" font-size="14" text-anchor="middle">小试验证</text>
+
+  <rect x="600" y="220" width="100" height="60" rx="5" fill="#fff" stroke="#52c41a" />
+  <text x="650" y="255" font-size="14" text-anchor="middle">内部评吸</text>
+
+  <!-- Trial -->
+  <rect x="120" y="340" width="100" height="60" rx="5" fill="#fff" stroke="#fa8c16" />
+  <text x="170" y="375" font-size="14" text-anchor="middle">标准制定</text>
+
+  <rect x="280" y="340" width="100" height="60" rx="5" fill="#fff" stroke="#fa8c16" />
+  <text x="330" y="375" font-size="14" text-anchor="middle">中试申请</text>
+
+  <rect x="440" y="340" width="100" height="60" rx="5" fill="#fff" stroke="#fa8c16" />
+  <text x="490" y="375" font-size="14" text-anchor="middle">在线试验</text>
+
+  <rect x="600" y="340" width="100" height="60" rx="5" fill="#fff" stroke="#fa8c16" />
+  <text x="650" y="375" font-size="14" text-anchor="middle">改进优化</text>
+
+  <!-- Launch -->
+  <rect x="280" y="460" width="100" height="60" rx="5" fill="#fff" stroke="#722ed1" />
+  <text x="330" y="495" font-size="14" text-anchor="middle">产品定型</text>
+
+  <rect x="440" y="460" width="100" height="60" rx="5" fill="#fff" stroke="#722ed1" />
+  <text x="490" y="495" font-size="14" text-anchor="middle">标准发布</text>
+
+  <rect x="600" y="460" width="100" height="60" rx="5" fill="#fff" stroke="#722ed1" />
+  <text x="650" y="495" font-size="14" text-anchor="middle">上市评审</text>
+
+  <!-- Connections -->
+  <line x1="220" y1="130" x2="280" y2="130" stroke="#666" stroke-width="2" marker-end="url(#arrow)" />
+  <line x1="380" y1="130" x2="440" y2="130" stroke="#666" stroke-width="2" marker-end="url(#arrow)" />
+  <line x1="540" y1="130" x2="600" y2="130" stroke="#666" stroke-width="2" marker-end="url(#arrow)" />
+  
+  <path d="M650,160 L650,190 L250,190 L250,220" fill="none" stroke="#666" stroke-width="2" marker-end="url(#arrow)" />
+  
+  <line x1="380" y1="250" x2="440" y2="250" stroke="#666" stroke-width="2" marker-end="url(#arrow)" />
+  <line x1="540" y1="250" x2="600" y2="250" stroke="#666" stroke-width="2" marker-end="url(#arrow)" />
+  
+  <path d="M650,280 L650,310 L170,310 L170,340" fill="none" stroke="#666" stroke-width="2" marker-end="url(#arrow)" />
+
+  <line x1="220" y1="370" x2="280" y2="370" stroke="#666" stroke-width="2" marker-end="url(#arrow)" />
+  <line x1="380" y1="370" x2="440" y2="370" stroke="#666" stroke-width="2" marker-end="url(#arrow)" />
+  <line x1="540" y1="370" x2="600" y2="370" stroke="#666" stroke-width="2" marker-end="url(#arrow)" />
+
+  <path d="M650,400 L650,430 L330,430 L330,460" fill="none" stroke="#666" stroke-width="2" marker-end="url(#arrow)" />
+  
+  <line x1="380" y1="490" x2="440" y2="490" stroke="#666" stroke-width="2" marker-end="url(#arrow)" />
+  <line x1="540" y1="490" x2="600" y2="490" stroke="#666" stroke-width="2" marker-end="url(#arrow)" />
+
+</svg>

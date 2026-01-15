@@ -148,6 +148,20 @@ interface ApprovalStep {
   comments?: string
 }
 
+// 项目接口
+interface Project {
+  id: string
+  name: string
+  manager: string
+  budget: number
+  startDate: string
+  endDate: string
+  status: 'planning' | 'ongoing' | 'completed' | 'suspended'
+  progress: number
+  description: string
+  members: string[]
+}
+
 const ComprehensiveManagement: React.FC = () => {
   const [activeTab, setActiveTab] = useState('achievements')
   const [modalVisible, setModalVisible] = useState(false)
@@ -155,6 +169,108 @@ const ComprehensiveManagement: React.FC = () => {
   const [selectedRecord, setSelectedRecord] = useState<any>(null)
   const [archiveModalVisible, setArchiveModalVisible] = useState(false)
   const [assetModalVisible, setAssetModalVisible] = useState(false)
+  const [projectModalVisible, setProjectModalVisible] = useState(false)
+  const [form] = Form.useForm()
+
+  // 模拟项目数据
+  const [projectList, setProjectList] = useState<Project[]>([
+    {
+      id: 'P001',
+      name: '焦甜香特色烟叶开发',
+      manager: '张项目',
+      budget: 5000000,
+      startDate: '2024-01-01',
+      endDate: '2024-12-31',
+      status: 'ongoing',
+      progress: 45,
+      description: '针对焦甜香风格烟叶的种植技术和加工工艺进行深入研究。',
+      members: ['李科研', '王种植']
+    },
+    {
+      id: 'P002',
+      name: '数字化研发平台建设',
+      manager: '赵数字化',
+      budget: 8000000,
+      startDate: '2023-06-01',
+      endDate: '2024-06-30',
+      status: 'ongoing',
+      progress: 80,
+      description: '构建一体化数字化研发平台，提升研发效率。',
+      members: ['孙IT', '钱需求']
+    },
+    {
+      id: 'P003',
+      name: '新型滤嘴材料研究',
+      manager: '周材料',
+      budget: 3000000,
+      startDate: '2023-01-01',
+      endDate: '2023-12-31',
+      status: 'completed',
+      progress: 100,
+      description: '开发一种新型可降解滤嘴材料。',
+      members: ['吴实验']
+    }
+  ])
+
+  // 项目 CRUDHandler
+  const handleCreateProject = () => {
+    form.validateFields().then(values => {
+      const newProject: Project = {
+        id: `P${(projectList.length + 1).toString().padStart(3, '0')}`,
+        ...values,
+        budget: Number(values.budget),
+        progress: 0,
+        startDate: values.dateRange ? values.dateRange[0].format('YYYY-MM-DD') : '',
+        endDate: values.dateRange ? values.dateRange[1].format('YYYY-MM-DD') : '',
+        members: []
+      }
+      setProjectList([...projectList, newProject])
+      setProjectModalVisible(false)
+      form.resetFields()
+    })
+  }
+
+  const handleUpdateProject = () => {
+    form.validateFields().then(values => {
+      const updatedList = projectList.map(item =>
+        item.id === selectedRecord.id
+          ? {
+            ...item,
+            ...values,
+            budget: Number(values.budget),
+            startDate: values.dateRange ? values.dateRange[0].format('YYYY-MM-DD') : item.startDate,
+            endDate: values.dateRange ? values.dateRange[1].format('YYYY-MM-DD') : item.endDate
+          }
+          : item
+      )
+      setProjectList(updatedList)
+      setProjectModalVisible(false)
+      form.resetFields()
+    })
+  }
+
+  const handleDeleteProject = (id: string) => {
+    Modal.confirm({
+      title: '确认删除',
+      content: '确定要删除这个项目吗？',
+      onOk: () => {
+        setProjectList(projectList.filter(item => item.id !== id))
+      }
+    })
+  }
+
+  const openProjectModal = (type: 'create' | 'edit' | 'view', record?: any) => {
+    setModalType(type)
+    setSelectedRecord(record || null)
+    if (record && type !== 'create') {
+      // 需要处理日期 moment 对象，这里简化
+      form.setFieldsValue(record)
+    } else {
+      form.resetFields()
+    }
+    setProjectModalVisible(true)
+  }
+
 
   // 模拟科研成果数据
   const achievements: ResearchAchievement[] = [
@@ -417,17 +533,76 @@ const ComprehensiveManagement: React.FC = () => {
       </Row>
 
       <Tabs activeKey={activeTab} onChange={setActiveTab}>
+        <TabPane tab="项目管理" key="projects" icon={<SyncOutlined />}>
+          <Card
+            title="科研项目管理"
+            extra={
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={() => openProjectModal('create')}
+              >
+                新建项目
+              </Button>
+            }
+          >
+            <Space style={{ marginBottom: 16 }}>
+              <Input placeholder="搜索项目名称" style={{ width: 200 }} prefix={<SearchOutlined />} />
+              <Select placeholder="状态" style={{ width: 120 }} allowClear>
+                <Option value="planning">筹备中</Option>
+                <Option value="ongoing">进行中</Option>
+                <Option value="completed">已完成</Option>
+                <Option value="suspended">暂停</Option>
+              </Select>
+            </Space>
+            <Table
+              columns={[
+                { title: '项目名称', dataIndex: 'name', key: 'name', render: (text: string) => <a>{text}</a> },
+                { title: '负责人', dataIndex: 'manager', key: 'manager' },
+                { title: '预算', dataIndex: 'budget', key: 'budget', render: (val: number) => `¥${val.toLocaleString()}` },
+                { title: '进度', dataIndex: 'progress', key: 'progress', render: (val: number) => <Progress percent={val} size="small" /> },
+                {
+                  title: '状态', dataIndex: 'status', key: 'status', render: (status: string) => {
+                    const statusConfigs = {
+                      planning: { color: 'blue', text: '筹备中' },
+                      ongoing: { color: 'green', text: '进行中' },
+                      completed: { color: 'gray', text: '已完成' },
+                      suspended: { color: 'orange', text: '暂停' }
+                    }
+                    const config = statusConfigs[status as keyof typeof statusConfigs]
+                    return <Tag color={config.color}>{config.text}</Tag>
+                  }
+                },
+                { title: '开始日期', dataIndex: 'startDate', key: 'startDate' },
+                { title: '结束日期', dataIndex: 'endDate', key: 'endDate' },
+                {
+                  title: '操作',
+                  key: 'action',
+                  render: (record: Project) => (
+                    <Space size="middle">
+                      <Button type="link" icon={<EyeOutlined />} size="small" onClick={() => openProjectModal('view', record)}>查看</Button>
+                      <Button type="link" icon={<EditOutlined />} size="small" onClick={() => openProjectModal('edit', record)}>编辑</Button>
+                      <Button type="link" danger icon={<DeleteOutlined />} size="small" onClick={() => handleDeleteProject(record.id)}>删除</Button>
+                    </Space>
+                  )
+                }
+              ]}
+              dataSource={projectList}
+              rowKey="id"
+            />
+          </Card>
+        </TabPane>
         <TabPane tab="科研成果" key="achievements" icon={<TrophyOutlined />}>
-          <Card 
-            title="科研成果归档管理" 
+          <Card
+            title="科研成果归档管理"
             extra={
               <Space>
-                <Button 
+                <Button
                   icon={<SyncOutlined />}
                 >
                   自动归档
                 </Button>
-                <Button 
+                <Button
                   icon={<PlusOutlined />}
                   onClick={() => {
                     setModalType('create')
@@ -473,8 +648,8 @@ const ComprehensiveManagement: React.FC = () => {
                 <Option value="技术创新">技术创新</Option>
                 <Option value="科技奖励">科技奖励</Option>
               </Select>
-              <Input 
-                placeholder="搜索标题或作者" 
+              <Input
+                placeholder="搜索标题或作者"
                 prefix={<SearchOutlined />}
                 style={{ width: 200 }}
               />
@@ -552,9 +727,9 @@ const ComprehensiveManagement: React.FC = () => {
                   key: 'action',
                   render: (record: ResearchAchievement) => (
                     <Space size="middle">
-                      <Button 
-                        type="link" 
-                        icon={<EyeOutlined />} 
+                      <Button
+                        type="link"
+                        icon={<EyeOutlined />}
                         size="small"
                         onClick={() => {
                           setSelectedRecord(record)
@@ -564,9 +739,9 @@ const ComprehensiveManagement: React.FC = () => {
                       >
                         查看
                       </Button>
-                      <Button 
-                        type="link" 
-                        icon={<EditOutlined />} 
+                      <Button
+                        type="link"
+                        icon={<EditOutlined />}
                         size="small"
                         onClick={() => {
                           setSelectedRecord(record)
@@ -577,9 +752,9 @@ const ComprehensiveManagement: React.FC = () => {
                       >
                         编辑
                       </Button>
-                      <Button 
-                        type="link" 
-                        icon={<FolderOutlined />} 
+                      <Button
+                        type="link"
+                        icon={<FolderOutlined />}
                         size="small"
                         onClick={() => {
                           setSelectedRecord(record)
@@ -939,23 +1114,27 @@ const ComprehensiveManagement: React.FC = () => {
                       { title: '创建日期', dataIndex: 'createDate', key: 'createDate' },
                       { title: '归档日期', dataIndex: 'archiveDate', key: 'archiveDate' },
                       { title: '保存期限', dataIndex: 'retentionPeriod', key: 'retentionPeriod', render: (period: number) => `${period}年` },
-                      { title: '密级', dataIndex: 'accessLevel', key: 'accessLevel', render: (level: string) => {
-                        const levelConfigs = {
-                          public: { color: 'green', text: '公开' },
-                          internal: { color: 'blue', text: '内部' },
-                          confidential: { color: 'orange', text: '机密' },
-                          secret: { color: 'red', text: '秘密' }
+                      {
+                        title: '密级', dataIndex: 'accessLevel', key: 'accessLevel', render: (level: string) => {
+                          const levelConfigs = {
+                            public: { color: 'green', text: '公开' },
+                            internal: { color: 'blue', text: '内部' },
+                            confidential: { color: 'orange', text: '机密' },
+                            secret: { color: 'red', text: '秘密' }
+                          }
+                          const config = levelConfigs[level as keyof typeof levelConfigs]
+                          return <Tag color={config.color}>{config.text}</Tag>
                         }
-                        const config = levelConfigs[level as keyof typeof levelConfigs]
-                        return <Tag color={config.color}>{config.text}</Tag>
-                      }},
+                      },
                       { title: '责任人', dataIndex: 'responsible', key: 'responsible' },
-                      { title: '操作', key: 'action', render: () => (
-                        <Space>
-                          <Button type="link" size="small">查看</Button>
-                          <Button type="link" size="small">下载</Button>
-                        </Space>
-                      )}
+                      {
+                        title: '操作', key: 'action', render: () => (
+                          <Space>
+                            <Button type="link" size="small">查看</Button>
+                            <Button type="link" size="small">下载</Button>
+                          </Space>
+                        )
+                      }
                     ]}
                     dataSource={[
                       { title: '2023年度技术创新项目总结', category: '科研档案', documentType: '项目报告', createDate: '2024-01-10', archiveDate: '2024-01-15', retentionPeriod: 10, accessLevel: 'internal', responsible: '陈报告' },
@@ -1074,7 +1253,7 @@ const ComprehensiveManagement: React.FC = () => {
       <Modal
         title={
           modalType === 'create' ? '新增科研成果' :
-          modalType === 'edit' ? '编辑科研成果' : '科研成果详情'
+            modalType === 'edit' ? '编辑科研成果' : '科研成果详情'
         }
         open={modalVisible}
         onCancel={() => setModalVisible(false)}
@@ -1380,16 +1559,18 @@ const ComprehensiveManagement: React.FC = () => {
                   size="small"
                   columns={[
                     { title: '维护日期', dataIndex: 'date', key: 'date' },
-                    { title: '维护类型', dataIndex: 'type', key: 'type', render: (type: string) => {
-                      const typeConfigs = {
-                        routine: { color: 'blue', text: '例行保养' },
-                        repair: { color: 'orange', text: '维修' },
-                        upgrade: { color: 'green', text: '升级' },
-                        inspection: { color: 'purple', text: '检查' }
+                    {
+                      title: '维护类型', dataIndex: 'type', key: 'type', render: (type: string) => {
+                        const typeConfigs = {
+                          routine: { color: 'blue', text: '例行保养' },
+                          repair: { color: 'orange', text: '维修' },
+                          upgrade: { color: 'green', text: '升级' },
+                          inspection: { color: 'purple', text: '检查' }
+                        }
+                        const config = typeConfigs[type as keyof typeof typeConfigs]
+                        return <Tag color={config.color}>{config.text}</Tag>
                       }
-                      const config = typeConfigs[type as keyof typeof typeConfigs]
-                      return <Tag color={config.color}>{config.text}</Tag>
-                    }},
+                    },
                     { title: '维护内容', dataIndex: 'description', key: 'description' },
                     { title: '费用', dataIndex: 'cost', key: 'cost', render: (cost: number) => `¥${cost.toLocaleString()}` },
                     { title: '操作人', dataIndex: 'operator', key: 'operator' },
@@ -1403,7 +1584,60 @@ const ComprehensiveManagement: React.FC = () => {
           </Form>
         )}
       </Modal>
-    </div>
+
+
+      {/* 项目管理模态框 */}
+      <Modal
+        title={modalType === 'create' ? '新建项目' : (modalType === 'edit' ? '编辑项目' : '项目详情')}
+        open={projectModalVisible}
+        onCancel={() => setProjectModalVisible(false)}
+        width={700}
+        footer={[
+          <Button key="cancel" onClick={() => setProjectModalVisible(false)}>取消</Button>,
+          <Button key="submit" type="primary" onClick={modalType === 'create' ? handleCreateProject : handleUpdateProject}>
+            {modalType === 'create' ? '创建' : '保存'}
+          </Button>
+        ]}
+      >
+        <Form layout="vertical" form={form}>
+          <Form.Item name="name" label="项目名称" rules={[{ required: true }]}>
+            <Input disabled={modalType === 'view'} />
+          </Form.Item>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item name="manager" label="负责人" rules={[{ required: true }]}>
+                <Input disabled={modalType === 'view'} />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item name="budget" label="预算" rules={[{ required: true }]}>
+                <Input type="number" prefix="¥" disabled={modalType === 'view'} />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item name="status" label="状态" rules={[{ required: true }]}>
+                <Select disabled={modalType === 'view'}>
+                  <Option value="planning">筹备中</Option>
+                  <Option value="ongoing">进行中</Option>
+                  <Option value="completed">已完成</Option>
+                  <Option value="suspended">暂停</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item label="起止日期" name="dateRange">
+                <DatePicker.RangePicker style={{ width: '100%' }} disabled={modalType === 'view'} />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Form.Item name="description" label="项目描述">
+            <TextArea rows={4} disabled={modalType === 'view'} />
+          </Form.Item>
+        </Form>
+      </Modal>
+    </div >
   )
 }
 

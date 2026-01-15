@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" style="font-family: 'Microsoft YaHei', sans-serif; background: #fff;">
+    <text x="600" y="50" font-size="28" font-weight="bold" text-anchor="middle" fill="#333">系统集成架构图</text>
+    
+    <!-- External Systems (Left & Right) -->
+    <g transform="translate(50, 200)">
+        <rect x="0" y="0" width="150" height="400" rx="10" fill="#f0f2f5" stroke="#999" />
+        <text x="75" y="30" font-size="18" font-weight="bold" text-anchor="middle" fill="#666">外部系统</text>
+        
+        <rect x="20" y="60" width="110" height="50" rx="4" fill="#fff" stroke="#666" /><text x="75" y="90" font-size="16" text-anchor="middle">ERP系统</text>
+        <rect x="20" y="130" width="110" height="50" rx="4" fill="#fff" stroke="#666" /><text x="75" y="160" font-size="16" text-anchor="middle">MES系统</text>
+        <rect x="20" y="200" width="110" height="50" rx="4" fill="#fff" stroke="#666" /><text x="75" y="230" font-size="16" text-anchor="middle">OA系统</text>
+        <rect x="20" y="270" width="110" height="50" rx="4" fill="#fff" stroke="#666" /><text x="75" y="300" font-size="16" text-anchor="middle">HR系统</text>
+    </g>
+
+    <!-- IoT Devices (Bottom) -->
+    <g transform="translate(350, 750)">
+        <rect x="0" y="0" width="500" height="100" rx="10" fill="#f0f2f5" stroke="#999" />
+        <text x="250" y="30" font-size="18" font-weight="bold" text-anchor="middle" fill="#666">物联设备层 (IoT)</text>
+        <g transform="translate(50, 40)">
+            <rect x="0" y="0" width="100" height="40" rx="4" fill="#fff" stroke="#666" /><text x="50" y="25" font-size="14" text-anchor="middle">检测仪器</text>
+            <rect x="150" y="0" width="100" height="40" rx="4" fill="#fff" stroke="#666" /><text x="200" y="25" font-size="14" text-anchor="middle">中试设备</text>
+            <rect x="300" y="0" width="100" height="40" rx="4" fill="#fff" stroke="#666" /><text x="350" y="25" font-size="14" text-anchor="middle">监控大屏</text>
+        </g>
+    </g>
+
+    <!-- Integration Layer (Center) -->
+    <g transform="translate(300, 150)">
+        <rect x="0" y="0" width="600" height="500" rx="10" fill="#f9f0ff" stroke="#722ed1" stroke-width="2" />
+        <text x="300" y="30" font-size="20" font-weight="bold" text-anchor="middle" fill="#722ed1">集成总线 (Enterprise Service Bus)</text>
+        
+        <!-- API Gateway -->
+        <g transform="translate(50, 60)">
+            <rect x="0" y="0" width="500" height="60" rx="4" fill="#d3adf7" stroke="#722ed1" />
+            <text x="250" y="35" font-size="18" font-weight="bold" text-anchor="middle" fill="#fff">API Gateway (路由/鉴权/限流)</text>
+        </g>
+
+        <!-- Message Queue -->
+        <g transform="translate(50, 150)">
+            <rect x="0" y="0" width="500" height="60" rx="4" fill="#b37feb" stroke="#722ed1" />
+            <text x="250" y="35" font-size="18" font-weight="bold" text-anchor="middle" fill="#fff">Message Queue (异步解耦/削峰)</text>
+        </g>
+
+        <!-- Data Pipeline -->
+        <g transform="translate(50, 240)">
+             <rect x="0" y="0" width="500" height="60" rx="4" fill="#9254de" stroke="#722ed1" />
+            <text x="250" y="35" font-size="18" font-weight="bold" text-anchor="middle" fill="#fff">Data Pipeline (ETL/CDC)</text>
+        </g>
+
+        <!-- Services -->
+        <g transform="translate(50, 350)">
+            <rect x="0" y="0" width="500" height="120" rx="4" fill="#fff" stroke="#722ed1" stroke-dasharray="5,5" />
+            <text x="250" y="25" font-size="16" font-weight="bold" text-anchor="middle" fill="#722ed1">微服务集群</text>
+            
+            <rect x="30" y="40" width="130" height="50" rx="4" fill="#efdbff" /><text x="95" y="70" font-size="14" text-anchor="middle">业务服务</text>
+            <rect x="185" y="40" width="130" height="50" rx="4" fill="#efdbff" /><text x="250" y="70" font-size="14" text-anchor="middle">中台服务</text>
+            <rect x="340" y="40" width="130" height="50" rx="4" fill="#efdbff" /><text x="405" y="70" font-size="14" text-anchor="middle">AI服务</text>
+        </g>
+    </g>
+
+    <!-- Arrows for Integration -->
+    <defs>
+        <marker id="arrow_purple" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#722ed1" /></marker>
+    </defs>
+    
+    <!-- External to Gateway -->
+    <line x1="200" y1="250" x2="300" y2="250" stroke="#722ed1" stroke-width="4" marker-end="url(#arrow_purple)" />
+    <line x1="300" y1="300" x2="200" y2="300" stroke="#722ed1" stroke-width="4" marker-end="url(#arrow_purple)" />
+
+    <!-- IoT to MQ/Data -->
+    <line x1="600" y1="750" x2="600" y2="650" stroke="#722ed1" stroke-width="4" marker-end="url(#arrow_purple)" />
+
+</svg>

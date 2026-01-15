@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700" style="font-family: 'Microsoft YaHei', sans-serif; background: #fff;">
+  <defs>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="2" dy="2" stdDeviation="2" flood-color="#ddd" />
+    </filter>
+  </defs>
+
+  <text x="500" y="40" font-size="24" font-weight="bold" text-anchor="middle" fill="#333">数字化研发平台总体技术路线</text>
+
+  <!-- Layers -->
+  <!-- Frontend -->
+  <g transform="translate(50, 80)">
+    <rect x="0" y="0" width="900" height="120" rx="8" fill="#e6f7ff" stroke="#1890ff" stroke-width="2" />
+    <text x="40" y="65" font-size="18" font-weight="bold" fill="#1890ff">前端层</text>
+    
+    <g transform="translate(120, 20)">
+      <rect x="0" y="0" width="160" height="80" rx="5" fill="#fff" stroke="#1890ff" filter="url(#shadow)" />
+      <text x="80" y="45" font-size="16" font-weight="bold" text-anchor="middle">React 18</text>
+      
+      <rect x="190" y="0" width="160" height="80" rx="5" fill="#fff" stroke="#1890ff" filter="url(#shadow)" />
+      <text x="270" y="45" font-size="16" font-weight="bold" text-anchor="middle">Ant Design 5</text>
+      
+      <rect x="380" y="0" width="160" height="80" rx="5" fill="#fff" stroke="#1890ff" filter="url(#shadow)" />
+      <text x="460" y="45" font-size="16" font-weight="bold" text-anchor="middle">Uni-app</text>
+      
+      <rect x="570" y="0" width="160" height="80" rx="5" fill="#fff" stroke="#1890ff" filter="url(#shadow)" />
+      <text x="650" y="45" font-size="16" font-weight="bold" text-anchor="middle">ECharts/AntV</text>
+    </g>
+  </g>
+
+  <!-- Backend / Microservices -->
+  <g transform="translate(50, 230)">
+    <rect x="0" y="0" width="900" height="150" rx="8" fill="#f6ffed" stroke="#52c41a" stroke-width="2" />
+    <text x="40" y="80" font-size="18" font-weight="bold" fill="#52c41a">微服务层</text>
+    
+    <g transform="translate(120, 35)">
+      <rect x="0" y="0" width="200" height="80" rx="5" fill="#fff" stroke="#52c41a" filter="url(#shadow)" />
+      <text x="100" y="35" font-size="16" font-weight="bold" text-anchor="middle">Spring Cloud Alibaba</text>
+      <text x="100" y="60" font-size="12" fill="#666" text-anchor="middle">Nacos / Sentinel / Seata</text>
+      
+      <rect x="250" y="0" width="200" height="80" rx="5" fill="#fff" stroke="#52c41a" filter="url(#shadow)" />
+      <text x="350" y="35" font-size="16" font-weight="bold" text-anchor="middle">API Gateway</text>
+      <text x="350" y="60" font-size="12" fill="#666" text-anchor="middle">路由 / 鉴权 / 限流</text>
+      
+      <rect x="500" y="0" width="200" height="80" rx="5" fill="#fff" stroke="#52c41a" filter="url(#shadow)" />
+      <text x="600" y="35" font-size="16" font-weight="bold" text-anchor="middle">AI Model Service</text>
+      <text x="600" y="60" font-size="12" fill="#666" text-anchor="middle">LangChain / Python</text>
+    </g>
+  </g>
+
+  <!-- Data Storage -->
+  <g transform="translate(50, 410)">
+    <rect x="0" y="0" width="900" height="120" rx="8" fill="#fff7e6" stroke="#fa8c16" stroke-width="2" />
+    <text x="40" y="65" font-size="18" font-weight="bold" fill="#fa8c16">数据存储</text>
+    
+    <g transform="translate(120, 20)">
+       <rect x="0" y="0" width="120" height="80" rx="5" fill="#fff" stroke="#fa8c16" filter="url(#shadow)" />
+       <text x="60" y="45" font-size="14" font-weight="bold" text-anchor="middle">MySQL 8.0</text>
+       
+       <rect x="140" y="0" width="120" height="80" rx="5" fill="#fff" stroke="#fa8c16" filter="url(#shadow)" />
+       <text x="200" y="45" font-size="14" font-weight="bold" text-anchor="middle">Redis 7.0</text>
+       
+       <rect x="280" y="0" width="120" height="80" rx="5" fill="#fff" stroke="#fa8c16" filter="url(#shadow)" />
+       <text x="340" y="45" font-size="14" font-weight="bold" text-anchor="middle">InfluxDB</text>
+       
+       <rect x="420" y="0" width="120" height="80" rx="5" fill="#fff" stroke="#fa8c16" filter="url(#shadow)" />
+       <text x="480" y="45" font-size="14" font-weight="bold" text-anchor="middle">MongoDB</text>
+       
+       <rect x="560" y="0" width="120" height="80" rx="5" fill="#fff" stroke="#fa8c16" filter="url(#shadow)" />
+       <text x="620" y="45" font-size="14" font-weight="bold" text-anchor="middle">MinIO</text>
+       
+       <rect x="700" y="0" width="120" height="80" rx="5" fill="#fff" stroke="#fa8c16" filter="url(#shadow)" />
+       <text x="760" y="45" font-size="14" font-weight="bold" text-anchor="middle">Neo4j</text>
+    </g>
+  </g>
+
+  <!-- DevOps / Infra -->
+  <g transform="translate(50, 560)">
+    <rect x="0" y="0" width="900" height="100" rx="8" fill="#f9f0ff" stroke="#722ed1" stroke-width="2" />
+    <text x="40" y="55" font-size="18" font-weight="bold" fill="#722ed1">基础设施</text>
+    
+    <g transform="translate(120, 25)">
+       <rect x="0" y="0" width="200" height="50" rx="5" fill="#fff" stroke="#722ed1" filter="url(#shadow)" />
+       <text x="100" y="30" font-size="14" font-weight="bold" text-anchor="middle">Kubernetes (K8s)</text>
+       
+       <rect x="250" y="0" width="200" height="50" rx="5" fill="#fff" stroke="#722ed1" filter="url(#shadow)" />
+       <text x="350" y="30" font-size="14" font-weight="bold" text-anchor="middle">Docker</text>
+       
+       <rect x="500" y="0" width="200" height="50" rx="5" fill="#fff" stroke="#722ed1" filter="url(#shadow)" />
+       <text x="600" y="30" font-size="14" font-weight="bold" text-anchor="middle">CI/CD (Jenkins)</text>
+    </g>
+  </g>
+
+  <!-- Arrows -->
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#999" />
+    </marker>
+  </defs>
+  
+  <line x1="500" y1="200" x2="500" y2="230" stroke="#999" stroke-width="2" marker-end="url(#arrow)" />
+  <line x1="500" y1="380" x2="500" y2="410" stroke="#999" stroke-width="2" marker-end="url(#arrow)" />
+  <line x1="500" y1="530" x2="500" y2="560" stroke="#999" stroke-width="2" marker-end="url(#arrow)" />
+
+</svg>

@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" style="font-family: 'Microsoft YaHei', sans-serif; background: #fff;">
+    <text x="600" y="50" font-size="28" font-weight="bold" text-anchor="middle" fill="#333">系统部署架构图 (两地三中心)</text>
+    
+    <!-- Production DC -->
+    <g transform="translate(50, 100)">
+        <rect x="0" y="0" width="500" height="700" rx="10" fill="#f6ffed" stroke="#52c41a" stroke-width="2" />
+        <text x="250" y="30" font-size="20" font-weight="bold" text-anchor="middle" fill="#52c41a">生产中心 (Production)</text>
+        
+        <!-- DMZ -->
+        <g transform="translate(30, 60)">
+            <rect x="0" y="0" width="440" height="100" rx="4" fill="#fff" stroke="#fa8c16" />
+            <text x="220" y="25" font-size="16" font-weight="bold" fill="#fa8c16" text-anchor="middle">DMZ区</text>
+            <rect x="50" y="40" width="150" height="40" rx="2" fill="#ffe7ba" /><text x="125" y="65" font-size="14" text-anchor="middle">WAF / LB</text>
+            <rect x="240" y="40" width="150" height="40" rx="2" fill="#ffe7ba" /><text x="315" y="65" font-size="14" text-anchor="middle">Nginx Gateway</text>
+        </g>
+        
+        <!-- App Zone -->
+        <g transform="translate(30, 180)">
+             <rect x="0" y="0" width="440" height="250" rx="4" fill="#fff" stroke="#1890ff" />
+             <text x="220" y="25" font-size="16" font-weight="bold" fill="#1890ff" text-anchor="middle">应用区 (K8s Cluster)</text>
+             
+             <rect x="30" y="50" width="380" height="180" rx="4" fill="#e6f7ff" stroke="#1890ff" stroke-dasharray="3,3" />
+             <text x="220" y="75" font-size="14" font-weight="bold" fill="#1890ff" text-anchor="middle">Worker Nodes</text>
+             
+             <rect x="50" y="90" width="100" height="40" rx="2" fill="#fff" /><text x="100" y="115" font-size="12" text-anchor="middle">Biz Pods</text>
+             <rect x="170" y="90" width="100" height="40" rx="2" fill="#fff" /><text x="220" y="115" font-size="12" text-anchor="middle">Middle Pods</text>
+             <rect x="290" y="90" width="100" height="40" rx="2" fill="#fff" /><text x="340" y="115" font-size="12" text-anchor="middle">AI Pods</text>
+        </g>
+        
+        <!-- Data Zone -->
+        <g transform="translate(30, 450)">
+             <rect x="0" y="0" width="440" height="200" rx="4" fill="#fff" stroke="#722ed1" />
+             <text x="220" y="25" font-size="16" font-weight="bold" fill="#722ed1" text-anchor="middle">数据区</text>
+             
+             <rect x="30" y="50" width="100" height="120" rx="2" fill="#f9f0ff" stroke="#722ed1" /><text x="80" y="115" font-size="14" text-anchor="middle">MySQL</text>
+             <rect x="150" y="50" width="100" height="120" rx="2" fill="#f9f0ff" stroke="#722ed1" /><text x="200" y="115" font-size="14" text-anchor="middle">Redis</text>
+             <rect x="270" y="50" width="100" height="120" rx="2" fill="#f9f0ff" stroke="#722ed1" /><text x="320" y="115" font-size="14" text-anchor="middle">MinIO</text>
+        </g>
+    </g>
+
+    <!-- Local DR (Top Right) -->
+    <g transform="translate(650, 100)">
+        <rect x="0" y="0" width="450" height="300" rx="10" fill="#e6f7ff" stroke="#1890ff" stroke-width="2" />
+        <text x="225" y="30" font-size="20" font-weight="bold" text-anchor="middle" fill="#1890ff">同城灾备 (Local DR)</text>
+        <rect x="50" y="100" width="350" height="150" rx="4" fill="#fff" stroke="#1890ff" />
+        <text x="225" y="180" font-size="16" fill="#666" text-anchor="middle">数据实时同步 (Active-Passive)</text>
+    </g>
+
+    <!-- Remote DR (Bottom Right) -->
+    <g transform="translate(650, 450)">
+        <rect x="0" y="0" width="450" height="300" rx="10" fill="#fff7e6" stroke="#fa8c16" stroke-width="2" />
+        <text x="225" y="30" font-size="20" font-weight="bold" text-anchor="middle" fill="#fa8c16">异地灾备 (Remote DR)</text>
+        <rect x="50" y="100" width="350" height="150" rx="4" fill="#fff" stroke="#fa8c16" />
+        <text x="225" y="180" font-size="16" fill="#666" text-anchor="middle">定期冷备 (Cold Backup)</text>
+    </g>
+
+    <!-- Replication Lines -->
+    <path d="M490,550 L650,250" fill="none" stroke="#2f54eb" stroke-width="3" stroke-dasharray="5,5" marker-end="url(#arrow)" />
+    <text x="550" y="380" font-size="14" fill="#2f54eb" transform="rotate(-30)">Sync Rep</text>
+
+    <path d="M490,580 L650,600" fill="none" stroke="#fa8c16" stroke-width="3" stroke-dasharray="5,5" marker-end="url(#arrow)" />
+    <text x="550" y="610" font-size="14" fill="#fa8c16" transform="rotate(10)">Async Rep</text>
+
+     <!-- Arrows -->
+   <defs> <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#999" /></marker> </defs>
+
+</svg>

@@ -1,0 +1,131 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" style="font-family: 'Microsoft YaHei', sans-serif; background: #f0f2f5;">
+    <!-- Title -->
+    <text x="600" y="50" font-size="28" font-weight="bold" text-anchor="middle" fill="#333">数字化研发平台业务架构图</text>
+    
+    <!-- 战略决策层 -->
+    <g transform="translate(100, 80)">
+        <rect x="0" y="0" width="1000" height="100" rx="10" fill="#e6f7ff" stroke="#1890ff" stroke-width="2" />
+        <text x="500" y="30" font-size="20" font-weight="bold" text-anchor="middle" fill="#1890ff">战略决策层 (Strategy)</text>
+        
+        <g transform="translate(50, 45)">
+            <rect x="0" y="0" width="280" height="40" rx="5" fill="#fff" stroke="#1890ff" />
+            <text x="140" y="27" font-size="16" text-anchor="middle">研发驾驶舱 (Dashboard)</text>
+            
+            <rect x="310" y="0" width="280" height="40" rx="5" fill="#fff" stroke="#1890ff" />
+            <text x="450" y="27" font-size="16" text-anchor="middle">项目全景图 (Panorama)</text>
+            
+            <rect x="620" y="0" width="280" height="40" rx="5" fill="#fff" stroke="#1890ff" />
+            <text x="760" y="27" font-size="16" text-anchor="middle">资源调度中心 (Resource)</text>
+        </g>
+    </g>
+
+    <!-- 业务执行层 (Core) -->
+    <g transform="translate(100, 200)">
+        <rect x="0" y="0" width="1000" height="350" rx="10" fill="#fff" stroke="#52c41a" stroke-width="2" stroke-dasharray="5,5" />
+        <text x="500" y="30" font-size="20" font-weight="bold" text-anchor="middle" fill="#52c41a">业务执行层 (Business Execution)</text>
+        
+        <!-- Left Wheel: Operations -->
+        <g transform="translate(50, 50)">
+            <rect x="0" y="0" width="420" height="280" rx="10" fill="#f6ffed" stroke="#b7eb8f" />
+            <text x="210" y="30" font-size="18" font-weight="bold" text-anchor="middle" fill="#52c41a">业务运营 (Operations)</text>
+            
+            <g transform="translate(20, 50)">
+                <rect x="0" y="0" width="180" height="40" rx="4" fill="#fff" stroke="#52c41a" />
+                <text x="90" y="25" font-size="14" text-anchor="middle">10. 综合管理 (Comprehensive)</text>
+                
+                <rect x="200" y="0" width="180" height="40" rx="4" fill="#fff" stroke="#52c41a" />
+                <text x="290" y="25" font-size="14" text-anchor="middle">7. 在线试验 (Online Test)</text>
+                
+                <rect x="0" y="60" width="180" height="40" rx="4" fill="#fff" stroke="#52c41a" />
+                <text x="90" y="85" font-size="14" text-anchor="middle">9. 实验室管理 (LIMS)</text>
+                
+                <rect x="200" y="60" width="180" height="40" rx="4" fill="#fff" stroke="#52c41a" />
+                <text x="290" y="85" font-size="14" text-anchor="middle">8. 质量管理 (Quality)</text>
+
+                <rect x="0" y="120" width="180" height="40" rx="4" fill="#fff" stroke="#52c41a" />
+                <text x="90" y="145" font-size="14" text-anchor="middle">2. 原料管理 (Material)</text>
+
+                 <rect x="200" y="120" width="180" height="40" rx="4" fill="#fff" stroke="#52c41a" />
+                <text x="290" y="145" font-size="14" text-anchor="middle">5. 烟用材料 (Aux Material)</text>
+                
+                <rect x="100" y="180" width="180" height="40" rx="4" fill="#fff" stroke="#52c41a" />
+                <text x="190" y="205" font-size="14" text-anchor="middle">11. 科研助手 (Assistant)</text>
+            </g>
+        </g>
+        
+        <!-- Right Wheel: Innovation -->
+        <g transform="translate(530, 50)">
+            <rect x="0" y="0" width="420" height="280" rx="10" fill="#e6fffb" stroke="#87e8de" />
+            <text x="210" y="30" font-size="18" font-weight="bold" text-anchor="middle" fill="#13c2c2">产品创新 (Innovation)</text>
+            
+             <g transform="translate(20, 50)">
+                <rect x="0" y="0" width="180" height="50" rx="4" fill="#fff" stroke="#13c2c2" />
+                <text x="90" y="20" font-size="14" text-anchor="middle">1. 市场洞察</text>
+                <text x="90" y="40" font-size="12" fill="#666" text-anchor="middle">(Market Insight)</text>
+                
+                <rect x="200" y="0" width="180" height="50" rx="4" fill="#fff" stroke="#13c2c2" />
+                <text x="290" y="20" font-size="14" text-anchor="middle">13. 新品设计</text>
+                <text x="290" y="40" font-size="12" fill="#666" text-anchor="middle">(New Product)</text>
+                
+                <rect x="0" y="70" width="180" height="50" rx="4" fill="#fff" stroke="#13c2c2" />
+                <text x="90" y="90" font-size="14" text-anchor="middle">3. 叶组配方</text>
+                 <text x="90" y="110" font-size="12" fill="#666" text-anchor="middle">(Leaf Formulation)</text>
+                
+                <rect x="200" y="70" width="180" height="50" rx="4" fill="#fff" stroke="#13c2c2" />
+                <text x="290" y="90" font-size="14" text-anchor="middle">4. 香精香料</text>
+                 <text x="290" y="110" font-size="12" fill="#666" text-anchor="middle">(Flavor &amp; Fragrance)</text>
+
+                <rect x="100" y="140" width="180" height="50" rx="4" fill="#fff" stroke="#13c2c2" />
+                <text x="190" y="160" font-size="14" text-anchor="middle">6. 工艺管理</text>
+                <text x="190" y="180" font-size="12" fill="#666" text-anchor="middle">(Process)</text>
+            </g>
+        </g>
+    </g>
+
+    <!-- 中台赋能层 -->
+    <g transform="translate(100, 580)">
+        <rect x="0" y="0" width="1000" height="120" rx="10" fill="#fff7e6" stroke="#fa8c16" stroke-width="2" />
+        <text x="500" y="30" font-size="20" font-weight="bold" text-anchor="middle" fill="#fa8c16">中台赋能层 (Middle Platform)</text>
+        
+        <g transform="translate(50, 45)">
+            <!-- 业务中台 -->
+            <rect x="0" y="0" width="420" height="60" rx="5" fill="#fff" stroke="#fa8c16" stroke-dasharray="3,3" />
+            <text x="210" y="20" font-size="16" font-weight="bold" fill="#fa8c16" text-anchor="middle">业务中台 (Business)</text>
+            <text x="210" y="45" font-size="14" fill="#666" text-anchor="middle">用户中心 | 流程中心 | 消息中心 | 文档中心 | 报表中心</text>
+            
+            <!-- 数据中台 -->
+            <rect x="480" y="0" width="420" height="60" rx="5" fill="#fff" stroke="#fa8c16" stroke-dasharray="3,3" />
+             <text x="690" y="20" font-size="16" font-weight="bold" fill="#fa8c16" text-anchor="middle">数据中台 (Data)</text>
+             <text x="690" y="45" font-size="14" fill="#666" text-anchor="middle">数据集成 | 数据治理 | 数据资产 | 算法实验室</text>
+        </g>
+    </g>
+
+    <!-- 数字底座层 + 职能支撑层 -->
+    <g transform="translate(100, 720)">
+        <rect x="0" y="0" width="1000" height="120" rx="10" fill="#f9f0ff" stroke="#722ed1" stroke-width="2" />
+        <text x="500" y="30" font-size="20" font-weight="bold" text-anchor="middle" fill="#722ed1">数字底座 &amp; 支撑 (Infrastructure)</text>
+        
+        <g transform="translate(50, 45)">
+             <rect x="0" y="0" width="420" height="60" rx="5" fill="#fff" stroke="#722ed1" />
+            <text x="210" y="25" font-size="16" font-weight="bold" fill="#722ed1" text-anchor="middle">职能支撑 (Support)</text>
+            <text x="210" y="48" font-size="14" fill="#666" text-anchor="middle">组织架构 | 权限管理 | 安全审计</text>
+
+            <rect x="480" y="0" width="420" height="60" rx="5" fill="#fff" stroke="#722ed1" />
+            <text x="690" y="25" font-size="16" font-weight="bold" fill="#722ed1" text-anchor="middle">技术底座 (Tech Base)</text>
+            <text x="690" y="48" font-size="14" fill="#666" text-anchor="middle">IaaS (计算/存储) | PaaS (容器/微服务) | DaaS (大数据)</text>
+        </g>
+    </g>
+    
+    <!-- Arrows -->
+    <defs>
+        <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="#999" />
+        </marker>
+    </defs>
+    
+    <!-- Connections -->
+    <line x1="600" y1="180" x2="600" y2="200" stroke="#999" stroke-width="2" marker-end="url(#arrow)" />
+    <line x1="600" y1="550" x2="600" y2="580" stroke="#999" stroke-width="2" marker-end="url(#arrow)" />
+    <line x1="600" y1="700" x2="600" y2="720" stroke="#999" stroke-width="2" marker-end="url(#arrow)" />
+
+</svg>

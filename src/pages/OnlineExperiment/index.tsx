@@ -113,8 +113,10 @@ const OnlineExperiment: React.FC = () => {
   const [sampleModalVisible, setSampleModalVisible] = useState(false)
   const [usageModalVisible, setUsageModalVisible] = useState(false)
 
+  const [form] = Form.useForm()
+
   // 模拟在线实验数据
-  const experiments: OnlineExperiment[] = [
+  const [experimentList, setExperimentList] = useState<OnlineExperiment[]>([
     {
       id: 'EXP001',
       name: '焦甜香系列中试验证',
@@ -281,7 +283,71 @@ const OnlineExperiment: React.FC = () => {
       estimatedDuration: 54,
       notes: '等待包装样品制作完成'
     }
-  ]
+  ])
+
+  const handleCreateExperiment = () => {
+    form.validateFields().then(values => {
+      const newExperiment: OnlineExperiment = {
+        id: `EXP${(experimentList.length + 1).toString().padStart(3, '0')}`,
+        ...values,
+        plannedStartTime: values.plannedStartTime ? values.plannedStartTime.format('YYYY-MM-DD HH:mm:ss') : '',
+        plannedEndTime: values.plannedEndTime ? values.plannedEndTime.format('YYYY-MM-DD HH:mm:ss') : '',
+        requestTime: new Date().toLocaleString(),
+        status: ExperimentStatus.PLANNED,
+        progress: 0
+      }
+      setExperimentList([...experimentList, newExperiment])
+      setModalVisible(false)
+      form.resetFields()
+    })
+  }
+
+  const handleUpdateExperiment = () => {
+    form.validateFields().then(values => {
+      const updatedList = experimentList.map(item =>
+        item.id === selectedRecord?.id
+          ? {
+            ...item,
+            ...values,
+            plannedStartTime: values.plannedStartTime ? values.plannedStartTime.format('YYYY-MM-DD HH:mm:ss') : item.plannedStartTime,
+            plannedEndTime: values.plannedEndTime ? values.plannedEndTime.format('YYYY-MM-DD HH:mm:ss') : item.plannedEndTime
+          }
+          : item
+      )
+      setExperimentList(updatedList)
+      setModalVisible(false)
+      setSelectedRecord(null)
+      form.resetFields()
+    })
+  }
+
+  const handleDeleteExperiment = (id: string) => {
+    Modal.confirm({
+      title: '确认删除',
+      content: '确定要删除这个实验任务吗？',
+      onOk: () => {
+        setExperimentList(experimentList.filter(item => item.id !== id))
+      }
+    })
+  }
+
+  const openExperimentModal = (type: 'create' | 'edit' | 'view', record?: OnlineExperiment) => {
+    setModalType(type)
+    setSelectedRecord(record || null)
+    if (record && type !== 'create') {
+      // Need to handle DatePicker Moment objects if using standard AntD DatePicker, 
+      // but here we are simplifying for demo or assuming string is fine if we touch the form manually
+      // or we just set fields directly.
+      // Ideally we convert strings to moment if using DatePicker in Form.
+      // But for quick demo let's see if we can just set values.
+      // Actually, I need to allow setting fields.
+      form.setFieldsValue(record)
+    } else {
+      form.resetFields()
+    }
+    setModalVisible(true)
+  }
+
 
   // 模拟样品烟数据
   const sampleCigarettes: SampleCigarette[] = [
@@ -443,7 +509,7 @@ const OnlineExperiment: React.FC = () => {
           <Card>
             <Statistic
               title="实验总数"
-              value={experiments.length}
+              value={experimentList.length}
               prefix={<ExperimentOutlined />}
               valueStyle={{ color: '#1890ff' }}
             />
@@ -453,7 +519,7 @@ const OnlineExperiment: React.FC = () => {
           <Card>
             <Statistic
               title="进行中实验"
-              value={experiments.filter(e => e.status === ExperimentStatus.RUNNING).length}
+              value={experimentList.filter(e => e.status === ExperimentStatus.RUNNING).length}
               prefix={<PlayCircleOutlined />}
               valueStyle={{ color: '#52c41a' }}
             />
@@ -484,22 +550,18 @@ const OnlineExperiment: React.FC = () => {
 
       <Tabs activeKey={activeTab} onChange={setActiveTab}>
         <TabPane tab="实验排产" key="experiments" icon={<ExperimentOutlined />}>
-          <Card 
-            title="在线实验管理" 
+          <Card
+            title="在线实验管理"
             extra={
               <Space>
-                <Button 
+                <Button
                   icon={<CalendarOutlined />}
                 >
                   排产日历
                 </Button>
-                <Button 
+                <Button
                   icon={<PlusOutlined />}
-                  onClick={() => {
-                    setModalType('create')
-                    setSelectedRecord(null)
-                    setModalVisible(true)
-                  }}
+                  onClick={() => openExperimentModal('create')}
                 >
                   新建实验
                 </Button>
@@ -623,9 +685,9 @@ const OnlineExperiment: React.FC = () => {
                   dataIndex: 'progress',
                   key: 'progress',
                   render: (progress: number) => (
-                    <Progress 
-                      percent={progress} 
-                      size="small" 
+                    <Progress
+                      percent={progress}
+                      size="small"
                       status={progress === 100 ? 'success' : progress > 0 ? 'active' : 'normal'}
                     />
                   )
@@ -635,57 +697,62 @@ const OnlineExperiment: React.FC = () => {
                   key: 'action',
                   render: (record: OnlineExperiment) => (
                     <Space size="middle">
-                      <Button 
-                        type="link" 
-                        icon={<EyeOutlined />} 
+                      <Button
+                        type="link"
+                        icon={<EyeOutlined />}
                         size="small"
-                        onClick={() => {
-                          setSelectedRecord(record)
-                          setModalType('view')
-                          setModalVisible(true)
-                        }}
+                        onClick={() => openExperimentModal('view', record)}
                       >
                         查看
                       </Button>
-                      <Button 
-                        type="link" 
-                        icon={<EditOutlined />} 
+                      <Button
+                        type="link"
+                        icon={<EditOutlined />}
                         size="small"
-                        onClick={() => {
-                          setSelectedRecord(record)
-                          setModalType('edit')
-                          setModalVisible(true)
-                        }}
+                        onClick={() => openExperimentModal('edit', record)}
                         disabled={record.status === ExperimentStatus.COMPLETED}
                       >
                         编辑
                       </Button>
-                      {record.status === ExperimentStatus.RUNNING && (
-                        <Button 
-                          type="link" 
-                          icon={<PauseCircleOutlined />} 
-                          size="small"
-                        >
-                          暂停
-                        </Button>
-                      )}
-                      {record.status === ExperimentStatus.PAUSED && (
-                        <Button 
-                          type="link" 
-                          icon={<PlayCircleOutlined />} 
-                          size="small"
-                        >
-                          继续
-                        </Button>
-                      )}
+                      <Button
+                        type="link"
+                        icon={<DeleteOutlined />}
+                        size="small"
+                        danger
+                        onClick={() => handleDeleteExperiment(record.id)}
+                      >
+                        删除
+                      </Button>
+                      {
+                        record.status === ExperimentStatus.RUNNING && (
+                          <Button
+                            type="link"
+                            icon={<PauseCircleOutlined />}
+                            size="small"
+                          >
+                            暂停
+                          </Button>
+                        )
+                      }
+                      {
+                        record.status === ExperimentStatus.PAUSED && (
+                          <Button
+                            type="link"
+                            icon={<PlayCircleOutlined />}
+                            size="small"
+                          >
+                            继续
+                          </Button>
+                        )
+                      }
                     </Space>
                   )
                 }
               ]}
-              dataSource={experiments}
+              dataSource={experimentList}
               rowKey="id"
               pagination={{
-                total: experiments.length,
+                total: experimentList.length,
                 pageSize: 10,
                 showSizeChanger: true,
                 showQuickJumper: true,
@@ -1037,7 +1104,7 @@ const OnlineExperiment: React.FC = () => {
       <Modal
         title={
           modalType === 'create' ? '新建实验' :
-          modalType === 'edit' ? '编辑实验' : '实验详情'
+            modalType === 'edit' ? '编辑实验' : '实验详情'
         }
         open={modalVisible}
         onCancel={() => setModalVisible(false)}
@@ -1050,27 +1117,25 @@ const OnlineExperiment: React.FC = () => {
           <Button key="cancel" onClick={() => setModalVisible(false)}>
             取消
           </Button>,
-          <Button key="submit" type="primary">
+          <Button key="submit" type="primary" onClick={modalType === 'create' ? handleCreateExperiment : handleUpdateExperiment}>
             {modalType === 'create' ? '创建' : '保存'}
           </Button>
         ]}
       >
-        <Form layout="vertical">
+        <Form layout="vertical" form={form}>
           <Row gutter={16}>
             <Col span={12}>
-              <Form.Item label="实验名称">
+              <Form.Item label="实验名称" name="name" rules={[{ required: true, message: '请输入实验名称' }]}>
                 <Input
                   placeholder="请输入实验名称"
-                  defaultValue={selectedRecord?.name}
                   disabled={modalType === 'view'}
                 />
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item label="实验类型">
+              <Form.Item label="实验类型" name="type" rules={[{ required: true, message: '请选择实验类型' }]}>
                 <Select
                   placeholder="请选择实验类型"
-                  defaultValue={selectedRecord?.type}
                   disabled={modalType === 'view'}
                 >
                   <Option value="pilot_test">产品中试</Option>
@@ -1081,21 +1146,19 @@ const OnlineExperiment: React.FC = () => {
             </Col>
           </Row>
 
-          <Form.Item label="实验描述">
+          <Form.Item label="实验描述" name="description">
             <TextArea
               rows={3}
               placeholder="请输入实验描述"
-              defaultValue={selectedRecord?.description}
               disabled={modalType === 'view'}
             />
           </Form.Item>
 
           <Row gutter={16}>
             <Col span={12}>
-              <Form.Item label="关联项目">
+              <Form.Item label="关联项目" name="projectId">
                 <Select
                   placeholder="请选择关联项目"
-                  defaultValue={selectedRecord?.projectId}
                   disabled={modalType === 'view'}
                 >
                   <Option value="PRJ001">焦甜香系列产品开发</Option>
@@ -1106,10 +1169,9 @@ const OnlineExperiment: React.FC = () => {
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item label="优先级">
+              <Form.Item label="优先级" name="priority">
                 <Select
                   placeholder="请选择优先级"
-                  defaultValue={selectedRecord?.priority}
                   disabled={modalType === 'view'}
                 >
                   <Option value="urgent">紧急</Option>
@@ -1123,7 +1185,7 @@ const OnlineExperiment: React.FC = () => {
 
           <Row gutter={16}>
             <Col span={12}>
-              <Form.Item label="计划开始时间">
+              <Form.Item label="计划开始时间" name="plannedStartTime">
                 <DatePicker
                   showTime
                   style={{ width: '100%' }}
@@ -1132,7 +1194,7 @@ const OnlineExperiment: React.FC = () => {
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item label="计划结束时间">
+              <Form.Item label="计划结束时间" name="plannedEndTime">
                 <DatePicker
                   showTime
                   style={{ width: '100%' }}
@@ -1144,20 +1206,18 @@ const OnlineExperiment: React.FC = () => {
 
           <Row gutter={16}>
             <Col span={12}>
-              <Form.Item label="预计时长(小时)">
+              <Form.Item label="预计时长(小时)" name="estimatedDuration">
                 <InputNumber
                   style={{ width: '100%' }}
                   placeholder="请输入预计时长"
-                  defaultValue={selectedRecord?.estimatedDuration}
                   disabled={modalType === 'view'}
                 />
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item label="申请人">
+              <Form.Item label="申请人" name="requester">
                 <Input
                   placeholder="请输入申请人"
-                  defaultValue={selectedRecord?.requester}
                   disabled={modalType === 'view'}
                 />
               </Form.Item>
@@ -1166,11 +1226,10 @@ const OnlineExperiment: React.FC = () => {
 
           <Row gutter={16}>
             <Col span={8}>
-              <Form.Item label="所需设备">
+              <Form.Item label="所需设备" name="equipment">
                 <Select
                   mode="multiple"
                   placeholder="请选择设备"
-                  defaultValue={selectedRecord?.equipment}
                   disabled={modalType === 'view'}
                 >
                   <Option value="中试生产线1号">中试生产线1号</Option>
@@ -1182,11 +1241,10 @@ const OnlineExperiment: React.FC = () => {
               </Form.Item>
             </Col>
             <Col span={8}>
-              <Form.Item label="所需材料">
+              <Form.Item label="所需材料" name="materials">
                 <Select
                   mode="multiple"
                   placeholder="请选择材料"
-                  defaultValue={selectedRecord?.materials}
                   disabled={modalType === 'view'}
                 >
                   <Option value="云南烟叶">云南烟叶</Option>
@@ -1198,11 +1256,10 @@ const OnlineExperiment: React.FC = () => {
               </Form.Item>
             </Col>
             <Col span={8}>
-              <Form.Item label="参与人员">
+              <Form.Item label="参与人员" name="personnel">
                 <Select
                   mode="multiple"
                   placeholder="请选择人员"
-                  defaultValue={selectedRecord?.personnel}
                   disabled={modalType === 'view'}
                 >
                   <Option value="李工艺">李工艺</Option>
@@ -1256,11 +1313,10 @@ const OnlineExperiment: React.FC = () => {
             </>
           )}
 
-          <Form.Item label="备注">
+          <Form.Item label="备注" name="notes">
             <TextArea
               rows={2}
               placeholder="请输入备注信息"
-              defaultValue={selectedRecord?.notes}
               disabled={modalType === 'view'}
             />
           </Form.Item>
@@ -1420,7 +1476,7 @@ const OnlineExperiment: React.FC = () => {
           </div>
         )}
       </Modal>
-    </div>
+    </div >
   )
 }
 

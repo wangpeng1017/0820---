@@ -1,23 +1,41 @@
 import React, { useState } from 'react'
-import { Card, Input, Button, List, Avatar, Space, Tabs, Upload, Tag, Row, Col, Typography } from 'antd'
-import { 
-  SendOutlined, 
-  RobotOutlined, 
+import { Card, Input, Button, List, Avatar, Space, Tabs, Upload, Tag, Row, Col, Typography, Modal, Form, Select, Dropdown, Menu } from 'antd'
+import {
+  SendOutlined,
+  RobotOutlined,
   UserOutlined,
   FileTextOutlined,
   UploadOutlined,
   BulbOutlined,
   SearchOutlined,
   BookOutlined,
-  MessageOutlined
+  MessageOutlined,
+  PlusOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  MoreOutlined
 } from '@ant-design/icons'
 
 const { TextArea } = Input
 const { TabPane } = Tabs
 const { Title, Paragraph } = Typography
+const { Option } = Select
+
+interface KnowledgeItem {
+  id: string;
+  title: string;
+  description: string;
+  tags: string[];
+  updateTime: string;
+}
 
 const ResearchAssistant: React.FC = () => {
   const [inputValue, setInputValue] = useState('')
+  const [modalVisible, setModalVisible] = useState(false)
+  const [modalType, setModalType] = useState<'add' | 'edit'>('add')
+  const [currentKnowledge, setCurrentKnowledge] = useState<KnowledgeItem | null>(null)
+  const [form] = Form.useForm()
+
   const [messages, setMessages] = useState([
     {
       id: '1',
@@ -64,68 +82,126 @@ const ResearchAssistant: React.FC = () => {
     }
   }
 
-  const knowledgeBase = [
+  const [knowledgeList, setKnowledgeList] = useState<KnowledgeItem[]>([
     {
+      id: '1',
       title: '烟草配方设计指南',
       description: '详细介绍烟草配方设计的原理、方法和最佳实践',
       tags: ['配方设计', '烟草工艺'],
       updateTime: '2024-03-15'
     },
     {
+      id: '2',
       title: '质量控制标准手册',
       description: '包含各类产品的质量标准和检测方法',
       tags: ['质量控制', '检测标准'],
       updateTime: '2024-03-10'
     },
     {
+      id: '3',
       title: '工艺参数优化案例',
       description: '收录了多个成功的工艺参数优化案例',
       tags: ['工艺优化', '案例分析'],
       updateTime: '2024-03-08'
     },
     {
+      id: '4',
       title: '香精调配技术手册',
       description: '香精调配的基础理论和实践技巧',
       tags: ['香精调配', '技术手册'],
       updateTime: '2024-03-20'
     },
     {
+      id: '5',
       title: '市场调研方法论',
       description: '消费者调研和市场分析的方法和工具',
       tags: ['市场调研', '方法论'],
       updateTime: '2024-03-18'
     },
     {
+      id: '6',
       title: '设备维护保养规程',
       description: '生产设备的维护保养标准操作程序',
       tags: ['设备维护', '操作规程'],
       updateTime: '2024-03-22'
     },
     {
+      id: '7',
       title: '环保法规汇编',
       description: '烟草行业相关的环保法规和标准',
       tags: ['环保法规', '合规管理'],
       updateTime: '2024-03-25'
     },
     {
+      id: '8',
       title: '新产品开发流程',
       description: '从概念到上市的完整产品开发流程',
       tags: ['产品开发', '流程管理'],
       updateTime: '2024-03-28'
     },
     {
+      id: '9',
       title: '供应链管理最佳实践',
       description: '原料采购和供应链优化的经验总结',
       tags: ['供应链', '最佳实践'],
       updateTime: '2024-03-30'
     },
     {
+      id: '10',
       title: '数字化转型指南',
       description: '传统制造业数字化转型的策略和方法',
       tags: ['数字化', '转型指南'],
       updateTime: '2024-04-01'
     }
-  ]
+  ])
+
+  const handleCreateKnowledge = () => {
+    form.validateFields().then(values => {
+      const newKnowledge = {
+        id: Date.now().toString(),
+        ...values,
+        updateTime: new Date().toISOString().split('T')[0]
+      }
+      setKnowledgeList([newKnowledge, ...knowledgeList])
+      setModalVisible(false)
+      form.resetFields()
+    })
+  }
+
+  const handleUpdateKnowledge = () => {
+    form.validateFields().then(values => {
+      const updatedList = knowledgeList.map(item =>
+        item.id === currentKnowledge?.id
+          ? { ...item, ...values, updateTime: new Date().toISOString().split('T')[0] }
+          : item
+      )
+      setKnowledgeList(updatedList)
+      setModalVisible(false)
+      setCurrentKnowledge(null)
+      form.resetFields()
+    })
+  }
+
+  const handleDeleteKnowledge = (id: string) => {
+    Modal.confirm({
+      title: '确认删除',
+      content: '确定要删除这条知识条目吗？',
+      onOk: () => {
+        setKnowledgeList(knowledgeList.filter(item => item.id !== id))
+      }
+    })
+  }
+
+  const openKnowledgeModal = (type: 'add' | 'edit', record?: KnowledgeItem) => {
+    setModalType(type)
+    setCurrentKnowledge(record || null)
+    if (record && type !== 'add') {
+      form.setFieldsValue(record)
+    } else {
+      form.resetFields()
+    }
+    setModalVisible(true)
+  }
 
   const recentDocuments = [
     {
@@ -209,10 +285,10 @@ const ResearchAssistant: React.FC = () => {
                   <List.Item style={{ border: 'none', padding: '8px 0' }}>
                     <List.Item.Meta
                       avatar={
-                        <Avatar 
+                        <Avatar
                           icon={message.type === 'user' ? <UserOutlined /> : <RobotOutlined />}
-                          style={{ 
-                            backgroundColor: message.type === 'user' ? '#1890ff' : '#52c41a' 
+                          style={{
+                            backgroundColor: message.type === 'user' ? '#1890ff' : '#52c41a'
                           }}
                         />
                       }
@@ -232,7 +308,7 @@ const ResearchAssistant: React.FC = () => {
                 )}
               />
             </div>
-            
+
             <Space.Compact style={{ width: '100%' }}>
               <TextArea
                 value={inputValue}
@@ -246,8 +322,8 @@ const ResearchAssistant: React.FC = () => {
                   }
                 }}
               />
-              <Button 
-                type="primary" 
+              <Button
+                type="primary"
                 icon={<SendOutlined />}
                 onClick={handleSendMessage}
                 style={{ height: 'auto' }}
@@ -261,10 +337,20 @@ const ResearchAssistant: React.FC = () => {
         <Col xs={24} lg={8}>
           <Tabs defaultActiveKey="knowledge">
             <TabPane tab="知识库" key="knowledge" icon={<BookOutlined />}>
+              <div style={{ marginBottom: 16, textAlign: 'right' }}>
+                <Button type="primary" icon={<PlusOutlined />} onClick={() => openKnowledgeModal('add')}>
+                  新增知识
+                </Button>
+              </div>
               <List
-                dataSource={knowledgeBase}
+                dataSource={knowledgeList}
                 renderItem={(item) => (
-                  <List.Item>
+                  <List.Item
+                    actions={[
+                      <Button type="link" icon={<EditOutlined />} onClick={() => openKnowledgeModal('edit', item)}>编辑</Button>,
+                      <Button type="link" danger icon={<DeleteOutlined />} onClick={() => handleDeleteKnowledge(item.id)}>删除</Button>
+                    ]}
+                  >
                     <List.Item.Meta
                       title={<a>{item.title}</a>}
                       description={
@@ -348,6 +434,32 @@ const ResearchAssistant: React.FC = () => {
           </Tabs>
         </Col>
       </Row>
+
+      <Modal
+        title={modalType === 'add' ? '新增知识' : '编辑知识'}
+        open={modalVisible}
+        onCancel={() => setModalVisible(false)}
+        footer={[
+          <Button key="cancel" onClick={() => setModalVisible(false)}>
+            取消
+          </Button>,
+          <Button key="submit" type="primary" onClick={modalType === 'add' ? handleCreateKnowledge : handleUpdateKnowledge}>
+            {modalType === 'add' ? '创建' : '保存'}
+          </Button>
+        ]}
+      >
+        <Form layout="vertical" form={form}>
+          <Form.Item label="标题" name="title" rules={[{ required: true, message: '请输入标题' }]}>
+            <Input placeholder="请输入标题" />
+          </Form.Item>
+          <Form.Item label="描述" name="description" rules={[{ required: true, message: '请输入描述' }]}>
+            <TextArea rows={3} placeholder="请输入描述" />
+          </Form.Item>
+          <Form.Item label="标签" name="tags">
+            <Select mode="tags" placeholder="请输入标签" style={{ width: '100%' }} />
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   )
 }

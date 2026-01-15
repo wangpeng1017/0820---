@@ -548,6 +548,269 @@ const MarketInsight: React.FC = () => {
     }
   ]
 
+  // 将静态数据转换为 State
+  const [surveys, setSurveys] = useState<SurveyTemplate[]>(surveyTemplates)
+  const [form] = Form.useForm()
+
+  // CRUD 操作处理函数
+  const handleCreateSurvey = (values: any) => {
+    const newSurvey: SurveyTemplate = {
+      id: `ST${(surveys.length + 1).toString().padStart(3, '0')}`,
+      name: values.name,
+      category: values.category,
+      description: values.description,
+      targetAudience: values.targetAudience,
+      estimatedTime: values.estimatedTime,
+      questions: [], // 简化处理，初始为空
+      creator: '当前用户',
+      createTime: new Date().toLocaleString(),
+      updateTime: new Date().toLocaleString(),
+      status: 'draft',
+      responseCount: 0
+    }
+    setSurveys([newSurvey, ...surveys])
+    setSurveyModalVisible(false)
+    form.resetFields()
+    Modal.success({ title: '创建成功', content: '新问卷已创建，状态为草稿。' })
+  }
+
+  const handleUpdateSurvey = (values: any) => {
+    if (!selectedSurvey) return
+    const updatedSurveys = surveys.map(s =>
+      s.id === selectedSurvey.id
+        ? { ...s, ...values, updateTime: new Date().toLocaleString() }
+        : s
+    )
+    setSurveys(updatedSurveys)
+    setSurveyModalVisible(false)
+    setSelectedSurvey(null)
+    form.resetFields()
+    Modal.success({ title: '更新成功', content: '问卷信息已更新。' })
+  }
+
+  const handleDeleteSurvey = (id: string) => {
+    Modal.confirm({
+      title: '确认删除',
+      content: '删除后无法恢复，确定要删除这个问卷吗？',
+      onOk: () => {
+        setSurveys(surveys.filter(s => s.id !== id))
+        Modal.success({ title: '删除成功', content: '问卷已删除。' })
+      }
+    })
+  }
+
+  const openCreateModal = () => {
+    setSurveyModalType('create')
+    setSelectedSurvey(null)
+    form.resetFields()
+    setSurveyModalVisible(true)
+  }
+
+  const openEditModal = (record: SurveyTemplate) => {
+    setSurveyModalType('edit')
+    setSelectedSurvey(record)
+    form.setFieldsValue(record)
+    setSurveyModalVisible(true)
+  }
+
+  // 渲染问卷管理 Tab 内容
+  const renderSurveyManagement = () => (
+    <div style={{ padding: '24px' }}>
+      <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
+        <Space>
+          <Button type="primary" icon={<PlusOutlined />} onClick={openCreateModal}>
+            新建问卷
+          </Button>
+          <Button icon={<DownloadOutlined />}>导出数据</Button>
+        </Space>
+        <Input.Search placeholder="搜索问卷名称" style={{ width: 200 }} />
+      </div>
+
+      <Table
+        columns={[
+          {
+            title: '问卷编号',
+            dataIndex: 'id',
+            key: 'id',
+            width: 100
+          },
+          {
+            title: '问卷名称',
+            dataIndex: 'name',
+            key: 'name',
+            render: (text) => <a>{text}</a>
+          },
+          {
+            title: '分类',
+            dataIndex: 'category',
+            key: 'category',
+            width: 120,
+            render: (text) => <Tag color="blue">{text}</Tag>
+          },
+          {
+            title: '目标人群',
+            dataIndex: 'targetAudience',
+            key: 'targetAudience',
+            ellipsis: true
+          },
+          {
+            title: '状态',
+            dataIndex: 'status',
+            key: 'status',
+            width: 100,
+            render: (status) => {
+              const colors = {
+                active: 'green',
+                draft: 'orange',
+                archived: 'default'
+              }
+              const labels = {
+                active: '进行中',
+                draft: '草稿',
+                archived: '已归档'
+              }
+              return <Tag color={colors[status as keyof typeof colors]}>{labels[status as keyof typeof labels]}</Tag>
+            }
+          },
+          {
+            title: '回收量',
+            dataIndex: 'responseCount',
+            key: 'responseCount',
+            width: 100,
+            sorter: (a, b) => a.responseCount - b.responseCount
+          },
+          {
+            title: '创建时间',
+            dataIndex: 'createTime',
+            key: 'createTime',
+            width: 180,
+            sorter: (a, b) => new Date(a.createTime).getTime() - new Date(b.createTime).getTime()
+          },
+          {
+            title: '操作',
+            key: 'action',
+            width: 250,
+            render: (_, record) => (
+              <Space size="middle">
+                <Button type="link" size="small" icon={<EyeOutlined />} onClick={() => setAnalysisModalVisible(true)}>
+                  分析
+                </Button>
+                <Button type="link" size="small" icon={<EditOutlined />} onClick={() => openEditModal(record)}>
+                  编辑
+                </Button>
+                <Button type="link" size="small" danger icon={<DeleteOutlined />} onClick={() => handleDeleteSurvey(record.id)}>
+                  删除
+                </Button>
+              </Space>
+            )
+          }
+        ]}
+        dataSource={surveys}
+        rowKey="id"
+        pagination={{ pageSize: 10 }}
+      />
+
+      {/* 创建/编辑问卷模态框 */}
+      <Modal
+        title={surveyModalType === 'create' ? '新建问卷' : '编辑问卷'}
+        visible={surveyModalVisible}
+        onOk={() => form.submit()}
+        onCancel={() => setSurveyModalVisible(false)}
+        width={600}
+      >
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={surveyModalType === 'create' ? handleCreateSurvey : handleUpdateSurvey}
+        >
+          <Form.Item
+            name="name"
+            label="问卷名称"
+            rules={[{ required: true, message: '请输入问卷名称' }]}
+          >
+            <Input placeholder="请输入问卷名称" />
+          </Form.Item>
+
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="category"
+                label="分类"
+                rules={[{ required: true, message: '请选择分类' }]}
+              >
+                <Select placeholder="请选择分类">
+                  <Option value="消费者研究">消费者研究</Option>
+                  <Option value="品牌研究">品牌研究</Option>
+                  <Option value="产品研究">产品研究</Option>
+                  <Option value="定价研究">定价研究</Option>
+                  <Option value="渠道研究">渠道研究</Option>
+                  <Option value="营销研究">营销研究</Option>
+                  <Option value="竞争研究">竞争研究</Option>
+                  <Option value="体验研究">体验研究</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="status"
+                label="状态"
+                initialValue="draft"
+              >
+                <Select>
+                  <Option value="draft">草稿</Option>
+                  <Option value="active">进行中</Option>
+                  <Option value="archived">已归档</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Form.Item
+            name="targetAudience"
+            label="目标人群"
+            rules={[{ required: true, message: '请输入目标人群' }]}
+          >
+            <Input placeholder="例如：18-35岁吸烟人群" />
+          </Form.Item>
+
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="estimatedTime"
+                label="预计耗时(分钟)"
+                initialValue={5}
+                rules={[{ required: true, message: '请输入预计耗时' }]}
+              >
+                <Input type="number" min={1} />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Form.Item
+            name="description"
+            label="问卷说明"
+          >
+            <TextArea rows={4} placeholder="请输入问卷说明" />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      {/* 分析模态框 (简单占位) */}
+      <Modal
+        title="问卷分析报告"
+        visible={analysisModalVisible}
+        onCancel={() => setAnalysisModalVisible(false)}
+        footer={null}
+        width={800}
+      >
+        <Alert message="分析报告展示区域（图表已集成在概览页）" type="info" showIcon />
+        <div style={{ height: 400, display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#f5f5f5', marginTop: 16 }}>
+          <BarChartOutlined style={{ fontSize: 64, color: '#ccc' }} />
+        </div>
+      </Modal>
+    </div>
+  )
+
   return (
     <div>
       <div className="page-header">
@@ -576,7 +839,7 @@ const MarketInsight: React.FC = () => {
                     支持MP3、WAV、M4A格式，文件大小不超过100MB，时长不超过60分钟
                   </p>
                 </Upload.Dragger>
-                
+
                 <div style={{ marginTop: 16 }}>
                   <Button type="primary" icon={<SoundOutlined />} block>
                     开始语音识别分析
@@ -593,121 +856,58 @@ const MarketInsight: React.FC = () => {
                   </div>
                   <div>
                     <strong>识别准确率：</strong>
-                    <Progress 
-                      percent={voiceAnalysisData.accuracy} 
-                      size="small" 
+                    <Progress
+                      percent={voiceAnalysisData.accuracy}
+                      size="small"
                       style={{ width: 200, marginLeft: 8 }}
                     />
                   </div>
                   <div>
-                    <strong>关键词：</strong>
+                    <strong>关键词提取：</strong>
                     <div style={{ marginTop: 8 }}>
-                      <Space wrap>
-                        {voiceAnalysisData.keyWords.map(word => (
-                          <Tag key={word} color="geekblue">{word}</Tag>
-                        ))}
-                      </Space>
+                      {voiceAnalysisData.keyWords.map(word => (
+                        <Tag key={word} color="blue">{word}</Tag>
+                      ))}
                     </div>
                   </div>
                 </Space>
               </Card>
 
-              <Card title="需求要素提取" style={{ marginTop: 16 }}>
-                <Space direction="vertical" style={{ width: '100%' }}>
-                  {voiceAnalysisData.insights.map((insight, index) => (
-                    <div key={index} style={{ 
-                      display: 'flex', 
-                      justifyContent: 'space-between',
-                      padding: '8px 0',
-                      borderBottom: index < voiceAnalysisData.insights.length - 1 ? '1px solid #f0f0f0' : 'none'
-                    }}>
-                      <div>
-                        <Tag color="orange">{insight.type}</Tag>
-                        <span>{insight.content}</span>
-                      </div>
-                      <div>
-                        <span style={{ color: '#52c41a' }}>置信度: {insight.confidence}%</span>
-                      </div>
-                    </div>
-                  ))}
-                </Space>
+              <Card title="洞察分析" style={{ marginTop: 16 }}>
+                <Table
+                  dataSource={voiceAnalysisData.insights}
+                  columns={[
+                    { title: '维度', dataIndex: 'type', key: 'type' },
+                    { title: '分析内容', dataIndex: 'content', key: 'content' },
+                    {
+                      title: '置信度',
+                      dataIndex: 'confidence',
+                      key: 'confidence',
+                      render: (val: number) => <Progress percent={val} size="small" />
+                    }
+                  ]}
+                  pagination={false}
+                  rowKey="type"
+                />
               </Card>
             </Col>
           </Row>
         </TabPane>
 
-        <TabPane tab="消费群体分析" key="consumer-analysis" icon={<UserOutlined />}>
-          <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
-            <Col xs={24} sm={8}>
-              <Card>
-                <Statistic
-                  title="目标群体数量"
-                  value={3}
-                  prefix={<UserOutlined />}
-                  valueStyle={{ color: '#1890ff' }}
-                />
-              </Card>
-            </Col>
-            <Col xs={24} sm={8}>
-              <Card>
-                <Statistic
-                  title="平均匹配度"
-                  value={88.3}
-                  suffix="%"
-                  prefix={<TrophyOutlined />}
-                  valueStyle={{ color: '#52c41a' }}
-                />
-              </Card>
-            </Col>
-            <Col xs={24} sm={8}>
-              <Card>
-                <Statistic
-                  title="市场潜力"
-                  value={156}
-                  suffix="万人"
-                  prefix={<ShoppingOutlined />}
-                  valueStyle={{ color: '#faad14' }}
-                />
-              </Card>
-            </Col>
-          </Row>
-
-          <Card title="智能推荐消费群体画像" extra={
-            <Button type="primary" icon={<BarChartOutlined />}>
-              重新分析
-            </Button>
-          }>
+        <TabPane tab="消费群体分析" key="consumer-profile" icon={<UserOutlined />}>
+          <Card
+            title="消费群体画像列表"
+            extra={<Button type="primary" icon={<PlusOutlined />}>新建画像</Button>}
+          >
             <Table
               columns={consumerColumns}
               dataSource={consumerProfiles}
-              pagination={false}
               rowKey="id"
+              pagination={{ pageSize: 10 }}
             />
           </Card>
-        </TabPane>
+          <Row gutter={[16, 16]}>
 
-        <TabPane tab="调研问卷" key="survey-generation" icon={<FormOutlined />}>
-          <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-            <Col xs={24} sm={6}>
-              <Card>
-                <Statistic
-                  title="问卷模板"
-                  value={surveyTemplates.length}
-                  prefix={<FormOutlined />}
-                  valueStyle={{ color: '#1890ff' }}
-                />
-              </Card>
-            </Col>
-            <Col xs={24} sm={6}>
-              <Card>
-                <Statistic
-                  title="活跃问卷"
-                  value={surveyTemplates.filter(s => s.status === 'active').length}
-                  prefix={<SendOutlined />}
-                  valueStyle={{ color: '#52c41a' }}
-                />
-              </Card>
-            </Col>
             <Col xs={24} sm={6}>
               <Card>
                 <Statistic
@@ -730,190 +930,191 @@ const MarketInsight: React.FC = () => {
               </Card>
             </Col>
           </Row>
-
-          <Card
-            title="问卷模板管理"
-            extra={
-              <Space>
-                <Button
-                  type="primary"
-                  icon={<PlusOutlined />}
-                  onClick={() => {
-                    setSurveyModalType('create')
-                    setSelectedSurvey(null)
-                    setSurveyModalVisible(true)
-                  }}
-                >
-                  创建问卷
-                </Button>
-                <Button icon={<BarChartOutlined />}>
-                  智能生成
-                </Button>
-              </Space>
-            }
-          >
-            <Space style={{ marginBottom: 16 }}>
-              <Input.Search
-                placeholder="搜索问卷名称或描述"
-                allowClear
-                style={{ width: 300 }}
-              />
-              <Select
-                placeholder="选择类别"
-                style={{ width: 150 }}
-                allowClear
-              >
-                <Option value="消费者研究">消费者研究</Option>
-                <Option value="品牌研究">品牌研究</Option>
-                <Option value="产品研究">产品研究</Option>
-                <Option value="定价研究">定价研究</Option>
-                <Option value="渠道研究">渠道研究</Option>
-                <Option value="营销研究">营销研究</Option>
-                <Option value="竞争研究">竞争研究</Option>
-                <Option value="体验研究">体验研究</Option>
-                <Option value="需求研究">需求研究</Option>
-              </Select>
-              <Select
-                placeholder="状态"
-                style={{ width: 120 }}
-                allowClear
-              >
-                <Option value="draft">草稿</Option>
-                <Option value="active">活跃</Option>
-                <Option value="archived">已归档</Option>
-              </Select>
-            </Space>
-
-            <Table
-              columns={[
-                {
-                  title: '问卷名称',
-                  dataIndex: 'name',
-                  key: 'name',
-                  render: (text: string) => <a>{text}</a>
-                },
-                {
-                  title: '类别',
-                  dataIndex: 'category',
-                  key: 'category',
-                  render: (category: string) => <Tag color="blue">{category}</Tag>
-                },
-                {
-                  title: '目标受众',
-                  dataIndex: 'targetAudience',
-                  key: 'targetAudience'
-                },
-                {
-                  title: '预估时间',
-                  dataIndex: 'estimatedTime',
-                  key: 'estimatedTime',
-                  render: (time: number) => `${time}分钟`
-                },
-                {
-                  title: '状态',
-                  dataIndex: 'status',
-                  key: 'status',
-                  render: (status: string) => {
-                    const colors = { draft: 'orange', active: 'green', archived: 'gray' }
-                    const names = { draft: '草稿', active: '活跃', archived: '已归档' }
-                    return <Tag color={colors[status as keyof typeof colors]}>{names[status as keyof typeof names]}</Tag>
-                  }
-                },
-                {
-                  title: '回收量',
-                  dataIndex: 'responseCount',
-                  key: 'responseCount',
-                  render: (count: number) => count.toLocaleString()
-                },
-                {
-                  title: '创建人',
-                  dataIndex: 'creator',
-                  key: 'creator'
-                },
-                {
-                  title: '更新时间',
-                  dataIndex: 'updateTime',
-                  key: 'updateTime'
-                },
-                {
-                  title: '操作',
-                  key: 'action',
-                  render: (record: SurveyTemplate) => (
-                    <Space size="middle">
-                      <Button
-                        type="link"
-                        icon={<EyeOutlined />}
-                        size="small"
-                        onClick={() => {
-                          setSelectedSurvey(record)
-                          setSurveyModalType('view')
-                          setSurveyModalVisible(true)
-                        }}
-                      >
-                        查看
-                      </Button>
-                      <Button
-                        type="link"
-                        icon={<EditOutlined />}
-                        size="small"
-                        onClick={() => {
-                          setSelectedSurvey(record)
-                          setSurveyModalType('edit')
-                          setSurveyModalVisible(true)
-                        }}
-                      >
-                        编辑
-                      </Button>
-                      <Button
-                        type="link"
-                        icon={<SendOutlined />}
-                        size="small"
-                        disabled={record.status !== 'active'}
-                      >
-                        发布
-                      </Button>
-                      <Button
-                        type="link"
-                        icon={<BarChartOutlined />}
-                        size="small"
-                        onClick={() => {
-                          setSelectedSurvey(record)
-                          setAnalysisModalVisible(true)
-                        }}
-                        disabled={record.responseCount === 0}
-                      >
-                        分析
-                      </Button>
-                      <Button
-                        type="link"
-                        icon={<CopyOutlined />}
-                        size="small"
-                      >
-                        复制
-                      </Button>
-                    </Space>
-                  )
-                }
-              ]}
-              dataSource={surveyTemplates}
-              rowKey="id"
-              pagination={{
-                total: surveyTemplates.length,
-                pageSize: 10,
-                showSizeChanger: true,
-                showQuickJumper: true,
-                showTotal: (total, range) => `第 ${range[0]}-${range[1]} 条，共 ${total} 条`
-              }}
-            />
-          </Card>
         </TabPane>
       </Tabs>
 
+      <Card
+        title="问卷模板管理"
+        extra={
+          <Space>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => {
+                setSurveyModalType('create')
+                setSelectedSurvey(null)
+                setSurveyModalVisible(true)
+              }}
+            >
+              创建问卷
+            </Button>
+            <Button icon={<BarChartOutlined />}>
+              智能生成
+            </Button>
+          </Space>
+        }
+      >
+        <Space style={{ marginBottom: 16 }}>
+          <Input.Search
+            placeholder="搜索问卷名称或描述"
+            allowClear
+            style={{ width: 300 }}
+          />
+          <Select
+            placeholder="选择类别"
+            style={{ width: 150 }}
+            allowClear
+          >
+            <Option value="消费者研究">消费者研究</Option>
+            <Option value="品牌研究">品牌研究</Option>
+            <Option value="产品研究">产品研究</Option>
+            <Option value="定价研究">定价研究</Option>
+            <Option value="渠道研究">渠道研究</Option>
+            <Option value="营销研究">营销研究</Option>
+            <Option value="竞争研究">竞争研究</Option>
+            <Option value="体验研究">体验研究</Option>
+            <Option value="需求研究">需求研究</Option>
+          </Select>
+          <Select
+            placeholder="状态"
+            style={{ width: 120 }}
+            allowClear
+          >
+            <Option value="draft">草稿</Option>
+            <Option value="active">活跃</Option>
+            <Option value="archived">已归档</Option>
+          </Select>
+        </Space>
+
+        <Table
+          columns={[
+            {
+              title: '问卷名称',
+              dataIndex: 'name',
+              key: 'name',
+              render: (text: string) => <a>{text}</a>
+            },
+            {
+              title: '类别',
+              dataIndex: 'category',
+              key: 'category',
+              render: (category: string) => <Tag color="blue">{category}</Tag>
+            },
+            {
+              title: '目标受众',
+              dataIndex: 'targetAudience',
+              key: 'targetAudience'
+            },
+            {
+              title: '预估时间',
+              dataIndex: 'estimatedTime',
+              key: 'estimatedTime',
+              render: (time: number) => `${time}分钟`
+            },
+            {
+              title: '状态',
+              dataIndex: 'status',
+              key: 'status',
+              render: (status: string) => {
+                const colors = { draft: 'orange', active: 'green', archived: 'gray' }
+                const names = { draft: '草稿', active: '活跃', archived: '已归档' }
+                return <Tag color={colors[status as keyof typeof colors]}>{names[status as keyof typeof names]}</Tag>
+              }
+            },
+            {
+              title: '回收量',
+              dataIndex: 'responseCount',
+              key: 'responseCount',
+              render: (count: number) => count.toLocaleString()
+            },
+            {
+              title: '创建人',
+              dataIndex: 'creator',
+              key: 'creator'
+            },
+            {
+              title: '更新时间',
+              dataIndex: 'updateTime',
+              key: 'updateTime'
+            },
+            {
+              title: '操作',
+              key: 'action',
+              render: (record: SurveyTemplate) => (
+                <Space size="middle">
+                  <Button
+                    type="link"
+                    icon={<EyeOutlined />}
+                    size="small"
+                    onClick={() => {
+                      setSelectedSurvey(record)
+                      setSurveyModalType('view')
+                      setSurveyModalVisible(true)
+                    }}
+                  >
+                    查看
+                  </Button>
+                  <Button
+                    type="link"
+                    icon={<EditOutlined />}
+                    size="small"
+                    onClick={() => {
+                      setSelectedSurvey(record)
+                      setSurveyModalType('edit')
+                      setSurveyModalVisible(true)
+                    }}
+                  >
+                    编辑
+                  </Button>
+                  <Button
+                    type="link"
+                    icon={<SendOutlined />}
+                    size="small"
+                    disabled={record.status !== 'active'}
+                  >
+                    发布
+                  </Button>
+                  <Button
+                    type="link"
+                    icon={<BarChartOutlined />}
+                    size="small"
+                    onClick={() => {
+                      setSelectedSurvey(record)
+                      setAnalysisModalVisible(true)
+                    }}
+                    disabled={record.responseCount === 0}
+                  >
+                    分析
+                  </Button>
+                  <Button
+                    type="link"
+                    icon={<CopyOutlined />}
+                    size="small"
+                  >
+                    复制
+                  </Button>
+                </Space>
+              )
+            }
+          ]}
+          dataSource={surveyTemplates}
+          rowKey="id"
+          pagination={{
+            total: surveyTemplates.length,
+            pageSize: 10,
+            showSizeChanger: true,
+            showQuickJumper: true,
+            showTotal: (total, range) => `第 ${range[0]}-${range[1]} 条，共 ${total} 条`
+          }}
+        />
+      </Card>
+
+
       {/* 问卷创建/编辑模态框 */}
-      <Modal
+      < Modal
         title={
           surveyModalType === 'create' ? '创建问卷' :
-          surveyModalType === 'edit' ? '编辑问卷' : '问卷详情'
+            surveyModalType === 'edit' ? '编辑问卷' : '问卷详情'
         }
         open={surveyModalVisible}
         onCancel={() => setSurveyModalVisible(false)}
@@ -1059,22 +1260,23 @@ const MarketInsight: React.FC = () => {
             </Form.Item>
           )}
         </Form>
-      </Modal>
+      </Modal >
 
       {/* 问卷分析模态框 */}
-      <Modal
+      < Modal
         title="问卷分析结果"
         open={analysisModalVisible}
         onCancel={() => setAnalysisModalVisible(false)}
         width={1000}
-        footer={[
-          <Button key="export" icon={<DownloadOutlined />}>
-            导出报告
-          </Button>,
-          <Button key="close" onClick={() => setAnalysisModalVisible(false)}>
-            关闭
-          </Button>
-        ]}
+        footer={
+          [
+            <Button key="export" icon={<DownloadOutlined />}>
+              导出报告
+            </Button>,
+            <Button key="close" onClick={() => setAnalysisModalVisible(false)}>
+              关闭
+            </Button>
+          ]}
       >
         {selectedSurvey && (
           <div>
@@ -1101,8 +1303,8 @@ const MarketInsight: React.FC = () => {
             </Card>
           </div>
         )}
-      </Modal>
-    </div>
+      </Modal >
+    </div >
   )
 }
 

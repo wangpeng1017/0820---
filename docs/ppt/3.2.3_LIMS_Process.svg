@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" style="font-family: 'Songti SC', 'SimSun', serif; background: #fff;">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#333" />
+    </marker>
+  </defs>
+
+  <text x="400" y="40" font-size="20" font-weight="bold" text-anchor="middle">LIMS检测闭环流程</text>
+
+  <!-- Lane 1: Requester -->
+  <rect x="50" y="80" width="700" height="100" fill="#f0f5ff" stroke="#ddd" />
+  <text x="70" y="135" font-size="16" font-weight="bold" writing-mode="tb">委托方</text>
+  
+  <rect x="120" y="100" width="120" height="60" rx="5" fill="#fff" stroke="#1890ff" />
+  <text x="180" y="135" font-size="14" text-anchor="middle">在线委托</text>
+
+  <rect x="600" y="100" width="120" height="60" rx="5" fill="#fff" stroke="#1890ff" />
+  <text x="660" y="135" font-size="14" text-anchor="middle">接收报告</text>
+
+  <!-- Lane 2: Lab Center -->
+  <rect x="50" y="180" width="700" height="180" fill="#f6ffed" stroke="#ddd" />
+  <text x="70" y="270" font-size="16" font-weight="bold" writing-mode="tb">检测中心</text>
+
+  <rect x="120" y="200" width="120" height="60" rx="5" fill="#fff" stroke="#52c41a" />
+  <text x="180" y="235" font-size="14" text-anchor="middle">扫码收样</text>
+  
+  <rect x="280" y="200" width="120" height="60" rx="5" fill="#fff" stroke="#52c41a" />
+  <text x="340" y="235" font-size="14" text-anchor="middle">任务分配</text>
+
+  <rect x="440" y="200" width="120" height="60" rx="5" fill="#fff" stroke="#52c41a" />
+  <text x="500" y="235" font-size="14" text-anchor="middle">上机检测</text>
+
+  <rect x="600" y="280" width="120" height="60" rx="5" fill="#fff" stroke="#52c41a" />
+  <text x="660" y="315" font-size="14" text-anchor="middle">电子签名</text>
+  
+  <rect x="440" y="280" width="120" height="60" rx="5" fill="#fff" stroke="#52c41a" />
+  <text x="500" y="315" font-size="14" text-anchor="middle">结果审核</text>
+
+  <!-- Lane 3: System (Auto) -->
+  <rect x="50" y="360" width="700" height="100" fill="#fff7e6" stroke="#ddd" />
+  <text x="70" y="415" font-size="16" font-weight="bold" writing-mode="tb">系统自动</text>
+  
+  <rect x="440" y="380" width="120" height="60" rx="5" fill="#fff" stroke="#fa8c16" stroke-dasharray="5,5" />
+  <text x="500" y="415" font-size="14" text-anchor="middle">自动采集数据</text>
+
+  <!-- Connections -->
+  <line x1="180" y1="160" x2="180" y2="200" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+  <line x1="240" y1="230" x2="280" y2="230" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+  <line x1="400" y1="230" x2="440" y2="230" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+
+  <line x1="500" y1="260" x2="500" y2="380" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+  <line x1="560" y1="410" x2="580" y2="410" stroke="#333" stroke-width="2" /> <line x1="580" y1="410" x2="580" y2="310" stroke="#333" stroke-width="2" /> <line x1="580" y1="310" x2="560" y2="310" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+
+  <line x1="500" y1="340" x2="500" y2="340" stroke="#333" stroke-width="2" /> <!-- Audit to Sign? No, Audit is checked, then Sign. -->
+  <line x1="560" y1="310" x2="600" y2="310" stroke="#333" stroke-width="2" marker-end="url(#arrow)" /> <!-- Audit -> Sign -->
+
+  <line x1="660" y1="280" x2="660" y2="160" stroke="#333" stroke-width="2" marker-end="url(#arrow)" /> <!-- Sign -> Receive -->
+
+</svg>

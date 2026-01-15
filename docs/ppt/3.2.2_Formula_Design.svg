@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" style="font-family: 'Songti SC', 'SimSun', serif; background: #fff;">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#333" />
+    </marker>
+  </defs>
+
+  <text x="400" y="40" font-size="20" font-weight="bold" text-anchor="middle">智能化配方设计流程</text>
+
+  <!-- Start -->
+  <rect x="50" y="200" width="120" height="60" rx="30" fill="#fff" stroke="#333" stroke-width="2" />
+  <text x="110" y="235" font-size="14" text-anchor="middle">目标定义</text>
+
+  <!-- Step 2 -->
+  <rect x="220" y="200" width="140" height="60" rx="5" fill="#e6f7ff" stroke="#1890ff" />
+  <text x="290" y="225" font-size="14" text-anchor="middle">AI智能推荐</text>
+  <text x="290" y="245" font-size="12" fill="#666" text-anchor="middle">(遗传算法)</text>
+
+  <!-- Step 3 -->
+  <rect x="410" y="200" width="140" height="60" rx="5" fill="#e6f7ff" stroke="#1890ff" />
+  <text x="480" y="225" font-size="14" text-anchor="middle">虚拟仿真</text>
+  <text x="480" y="245" font-size="12" fill="#666" text-anchor="middle">(指标预测)</text>
+
+  <!-- Decision -->
+  <polygon points="650,180 700,230 650,280 600,230" fill="#fff" stroke="#fa8c16" />
+  <text x="650" y="235" font-size="14" text-anchor="middle">满意?</text>
+
+  <!-- Step 4 -->
+  <rect x="600" y="350" width="140" height="60" rx="5" fill="#f6ffed" stroke="#52c41a" />
+  <text x="670" y="385" font-size="14" text-anchor="middle">实物打样</text>
+
+  <!-- Step 5 -->
+  <rect x="400" y="350" width="140" height="60" rx="5" fill="#f6ffed" stroke="#52c41a" />
+  <text x="470" y="385" font-size="14" text-anchor="middle">闭环反馈</text>
+
+  <!-- Connections -->
+  <line x1="170" y1="230" x2="220" y2="230" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+  <line x1="360" y1="230" x2="410" y2="230" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+  <line x1="550" y1="230" x2="600" y2="230" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+  
+  <!-- Loop back -->
+  <path d="M650,180 L650,100 L290,100 L290,200" fill="none" stroke="#fa8c16" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrow)" />
+  <text x="500" y="120" font-size="12" fill="#fa8c16">不满意 (调整参数)</text>
+
+  <line x1="650" y1="280" x2="650" y2="350" stroke="#52c41a" stroke-width="2" marker-end="url(#arrow)" />
+  <text x="660" y="310" font-size="12" fill="#52c41a">Yes</text>
+
+  <line x1="600" y1="380" x2="540" y2="380" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+  
+  <rect x="200" y="350" width="120" height="60" rx="30" fill="#fff" stroke="#333" stroke-width="2" />
+  <text x="260" y="385" font-size="14" text-anchor="middle">结束</text>
+  <line x1="400" y1="380" x2="320" y2="380" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+
+</svg>

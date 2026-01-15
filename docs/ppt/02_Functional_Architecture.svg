@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" style="font-family: 'Microsoft YaHei', sans-serif; background: #fff;">
+    <text x="600" y="50" font-size="28" font-weight="bold" text-anchor="middle" fill="#333">系统功能架构图</text>
+    
+    <!-- 用户体验层 -->
+    <g transform="translate(100, 80)">
+        <rect x="0" y="0" width="1000" height="100" rx="4" fill="#e6f7ff" stroke="#1890ff" stroke-width="2" />
+        <text x="50" y="55" font-size="18" font-weight="bold" fill="#1890ff">用户体验层</text>
+        <g transform="translate(200, 20)">
+            <rect x="0" y="0" width="220" height="60" rx="4" fill="#fff" stroke="#1890ff" />
+            <text x="110" y="35" font-size="16" text-anchor="middle">PC端科研工作台</text>
+            
+            <rect x="260" y="0" width="220" height="60" rx="4" fill="#fff" stroke="#1890ff" />
+            <text x="370" y="35" font-size="16" text-anchor="middle">移动端 App/小程序</text>
+            
+            <rect x="520" y="0" width="220" height="60" rx="4" fill="#fff" stroke="#1890ff" />
+            <text x="630" y="35" font-size="16" text-anchor="middle">数字化大屏</text>
+        </g>
+    </g>
+
+    <!-- 业务应用层 -->
+    <g transform="translate(100, 200)">
+        <rect x="0" y="0" width="1000" height="280" rx="4" fill="#f6ffed" stroke="#52c41a" stroke-width="2" />
+        <text x="50" y="140" font-size="18" font-weight="bold" fill="#52c41a">业务应用层</text>
+        
+        <!-- 研发设计类 -->
+        <g transform="translate(180, 20)">
+            <rect x="0" y="0" width="780" height="70" rx="4" fill="#fff" stroke="#52c41a" />
+            <text x="20" y="40" font-size="16" font-weight="bold" fill="#333">研发设计类</text>
+            <text x="120" y="40" font-size="14" fill="#666">市场洞察 | 配方设计 | 工艺设计 | 材料设计 | 新品设计</text>
+        </g>
+        
+        <!-- 业务管理类 -->
+        <g transform="translate(180, 105)">
+            <rect x="0" y="0" width="780" height="70" rx="4" fill="#fff" stroke="#52c41a" />
+            <text x="20" y="40" font-size="16" font-weight="bold" fill="#333">业务管理类</text>
+            <text x="120" y="40" font-size="14" fill="#666">LIMS实验室 | 质量管理 | 在线试验 | 原料管理 | 综合管理</text>
+        </g>
+        
+        <!-- 智能辅助类 -->
+        <g transform="translate(180, 190)">
+            <rect x="0" y="0" width="780" height="70" rx="4" fill="#fff" stroke="#52c41a" />
+            <text x="20" y="40" font-size="16" font-weight="bold" fill="#333">智能辅助类</text>
+            <text x="120" y="40" font-size="14" fill="#666">科研助手 (RAG问答 / 文档生成 / 翻译)</text>
+        </g>
+    </g>
+
+    <!-- 中台层 (Business + Data) -->
+    <g transform="translate(100, 500)">
+        <rect x="0" y="0" width="1000" height="180" rx="4" fill="#fff7e6" stroke="#fa8c16" stroke-width="2" />
+         <text x="50" y="90" font-size="18" font-weight="bold" fill="#fa8c16">中台能力层</text>
+
+        <!-- 业务中台 -->
+        <g transform="translate(180, 20)">
+            <rect x="0" y="0" width="380" height="140" rx="4" fill="#fff" stroke="#fa8c16" stroke-dasharray="3,3" />
+            <text x="190" y="25" font-size="16" font-weight="bold" text-anchor="middle" fill="#fa8c16">业务中台 (Business Middle)</text>
+            
+            <rect x="20" y="40" width="100" height="35" rx="2" fill="#ffe7ba" /><text x="70" y="63" font-size="12" text-anchor="middle">用户中心</text>
+            <rect x="140" y="40" width="100" height="35" rx="2" fill="#ffe7ba" /><text x="190" y="63" font-size="12" text-anchor="middle">流程中心</text>
+            <rect x="260" y="40" width="100" height="35" rx="2" fill="#ffe7ba" /><text x="310" y="63" font-size="12" text-anchor="middle">消息中心</text>
+            
+            <rect x="60" y="90" width="100" height="35" rx="2" fill="#ffe7ba" /><text x="110" y="113" font-size="12" text-anchor="middle">文档中心</text>
+            <rect x="220" y="90" width="100" height="35" rx="2" fill="#ffe7ba" /><text x="270" y="113" font-size="12" text-anchor="middle">报表中心</text>
+        </g>
+
+        <!-- 数据中台 -->
+        <g transform="translate(580, 20)">
+            <rect x="0" y="0" width="380" height="140" rx="4" fill="#fff" stroke="#fa8c16" stroke-dasharray="3,3" />
+             <text x="190" y="25" font-size="16" font-weight="bold" text-anchor="middle" fill="#fa8c16">数据中台 (Data Middle)</text>
+            
+            <rect x="20" y="40" width="100" height="35" rx="2" fill="#ffe7ba" /><text x="70" y="63" font-size="12" text-anchor="middle">数据集成</text>
+            <rect x="140" y="40" width="100" height="35" rx="2" fill="#ffe7ba" /><text x="190" y="63" font-size="12" text-anchor="middle">数据治理</text>
+            <rect x="260" y="40" width="100" height="35" rx="2" fill="#ffe7ba" /><text x="310" y="63" font-size="12" text-anchor="middle">数据资产</text>
+            
+            <rect x="140" y="90" width="100" height="35" rx="2" fill="#ffe7ba" /><text x="190" y="113" font-size="12" text-anchor="middle">AI算法实验</text>
+        </g>
+    </g>
+
+    <!-- 技术底座层 -->
+    <g transform="translate(100, 700)">
+        <rect x="0" y="0" width="1000" height="120" rx="4" fill="#f9f0ff" stroke="#722ed1" stroke-width="2" />
+        <text x="50" y="65" font-size="18" font-weight="bold" fill="#722ed1">技术设施层</text>
+        
+        <g transform="translate(180, 30)">
+             <rect x="0" y="0" width="240" height="60" rx="4" fill="#fff" stroke="#722ed1" />
+             <text x="120" y="35" font-size="14" text-anchor="middle">容器云平台 (K8s/Docker)</text>
+
+             <rect x="270" y="0" width="240" height="60" rx="4" fill="#fff" stroke="#722ed1" />
+             <text x="390" y="35" font-size="14" text-anchor="middle">DevOps (GitLab/Jenkins)</text>
+             
+             <rect x="540" y="0" width="240" height="60" rx="4" fill="#fff" stroke="#722ed1" />
+             <text x="660" y="35" font-size="14" text-anchor="middle">中间件 (Redis/MQ/DB)</text>
+        </g>
+    </g>
+
+    <!-- Arrows -->
+   <defs> <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#999" /></marker> </defs>
+   <line x1="600" y1="180" x2="600" y2="200" stroke="#999" stroke-width="2" marker-end="url(#arrow)" />
+   <line x1="600" y1="480" x2="600" y2="500" stroke="#999" stroke-width="2" marker-end="url(#arrow)" />
+   <line x1="600" y1="680" x2="600" y2="700" stroke="#999" stroke-width="2" marker-end="url(#arrow)" />
+</svg>

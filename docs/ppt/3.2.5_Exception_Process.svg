@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" style="font-family: 'Songti SC', 'SimSun', serif; background: #fff;">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#333" />
+    </marker>
+  </defs>
+
+  <text x="400" y="40" font-size="20" font-weight="bold" text-anchor="middle">异常与变更管理流程</text>
+
+  <!-- Start -->
+  <rect x="50" y="100" width="120" height="60" rx="5" fill="#fff" stroke="#d4380d" />
+  <text x="110" y="135" font-size="14" text-anchor="middle">变更发起</text>
+
+  <!-- Analysis -->
+  <rect x="220" y="100" width="140" height="60" rx="5" fill="#fff" stroke="#d4380d" />
+  <text x="290" y="135" font-size="14" text-anchor="middle">影响自动分析</text>
+
+  <!-- Approval Branch -->
+  <polygon points="450,80 500,130 450,180 400,130" fill="#fff7e6" stroke="#fa8c16" />
+  <text x="450" y="135" font-size="14" text-anchor="middle">风险等级?</text>
+
+  <rect x="550" y="50" width="140" height="50" rx="5" fill="#fff" stroke="#333" />
+  <text x="620" y="80" font-size="14" text-anchor="middle">部门经理审批</text>
+  <text x="500" y="70" font-size="12" fill="#666">一般</text>
+
+  <rect x="550" y="150" width="140" height="50" rx="5" fill="#fff" stroke="#333" />
+  <text x="620" y="180" font-size="14" text-anchor="middle">中心主任审批</text>
+  <text x="500" y="190" font-size="12" fill="#666">重大</text>
+
+  <!-- Execute -->
+  <rect x="300" y="250" width="400" height="80" fill="#f6ffed" stroke="#52c41a" stroke-dasharray="5,5" />
+  <text x="500" y="275" font-size="16" font-weight="bold" fill="#52c41a" text-anchor="middle">变更执行</text>
+  
+  <rect x="320" y="280" width="160" height="40" rx="4" fill="#fff" stroke="#52c41a" />
+  <text x="400" y="305" font-size="12" text-anchor="middle">下发新标准 (MES)</text>
+  
+  <rect x="520" y="280" width="160" height="40" rx="4" fill="#fff" stroke="#52c41a" />
+  <text x="600" y="305" font-size="12" text-anchor="middle">按新标检验 (LIMS)</text>
+
+  <!-- Verify -->
+  <rect x="300" y="380" width="150" height="60" rx="5" fill="#e6f7ff" stroke="#1890ff" />
+  <text x="375" y="415" font-size="14" text-anchor="middle">效果验证</text>
+
+  <!-- End -->
+  <rect x="550" y="380" width="100" height="60" rx="30" fill="#fff" stroke="#333" />
+  <text x="600" y="415" font-size="14" text-anchor="middle">归档/闭环</text>
+
+  <!-- Connections -->
+  <line x1="170" y1="130" x2="220" y2="130" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+  <line x1="360" y1="130" x2="400" y2="130" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+  
+  <line x1="450" y1="80" x2="450" y2="70" stroke="#333" stroke-width="1" /> <line x1="450" y1="70" x2="550" y2="70" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+  <line x1="450" y1="180" x2="450" y2="190" stroke="#333" stroke-width="1" /> <line x1="450" y1="190" x2="550" y2="170" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+
+  <line x1="690" y1="75" x2="720" y2="75" stroke="#333" stroke-width="2" /> <line x1="720" y1="75" x2="720" y2="250" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+  <line x1="690" y1="175" x2="720" y2="175" stroke="#333" stroke-width="2" />
+
+  <line x1="500" y1="330" x2="450" y2="380" stroke="#52c41a" stroke-width="2" marker-end="url(#arrow)" />
+  <line x1="450" y1="410" x2="550" y2="410" stroke="#1890ff" stroke-width="2" marker-end="url(#arrow)" />
+
+</svg>

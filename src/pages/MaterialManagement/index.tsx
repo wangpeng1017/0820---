@@ -94,8 +94,15 @@ const MaterialManagement: React.FC = () => {
   const [modalVisible, setModalVisible] = useState(false)
   const [modalType, setModalType] = useState<'add' | 'edit' | 'view'>('add')
   const [selectedRecord, setSelectedRecord] = useState<any>(null)
+
+  // 原料 CRUD 状态
+  const [materialModalVisible, setMaterialModalVisible] = useState(false)
+  const [materialModalType, setMaterialModalType] = useState<'add' | 'edit' | 'view'>('add')
+  const [currentMaterial, setCurrentMaterial] = useState<any>(null)
+  const [materialForm] = Form.useForm()
+
   // 模拟原料数据
-  const materials = [
+  const [materialList, setMaterialList] = useState([
     {
       id: 'M001',
       name: '云南上部烟叶',
@@ -216,7 +223,56 @@ const MaterialManagement: React.FC = () => {
       status: 'low',
       expiryDate: '2024-08-15'
     }
-  ]
+  ])
+
+  // 原料 CRUD 处理函数
+  const handleCreateMaterial = (values: any) => {
+    const newMaterial = {
+      id: `M${(materialList.length + 1).toString().padStart(3, '0')}`,
+      ...values,
+      stock: parseFloat(values.stock),
+      expiryDate: values.expiryDate?.format('YYYY-MM-DD') || '',
+      status: 'normal'
+    }
+    setMaterialList([...materialList, newMaterial])
+    setMaterialModalVisible(false)
+    materialForm.resetFields()
+  }
+
+  const handleUpdateMaterial = (values: any) => {
+    const updatedMaterialList = materialList.map(item =>
+      item.id === currentMaterial.id
+        ? { ...item, ...values, stock: parseFloat(values.stock), expiryDate: values.expiryDate?.format('YYYY-MM-DD') || item.expiryDate }
+        : item
+    )
+    setMaterialList(updatedMaterialList)
+    setMaterialModalVisible(false)
+    setCurrentMaterial(null)
+    materialForm.resetFields()
+  }
+
+  const handleDeleteMaterial = (id: string) => {
+    Modal.confirm({
+      title: '确认删除',
+      content: '确定要删除这个原料吗？',
+      onOk: () => {
+        setMaterialList(materialList.filter(item => item.id !== id))
+      }
+    })
+  }
+
+  const openMaterialModal = (type: 'add' | 'edit' | 'view', record?: any) => {
+    setMaterialModalType(type)
+    setCurrentMaterial(record || null)
+    if (record) {
+      // 需要处理日期 moment 对象，这里简化处理，假设 Form 会处理字符串或需要转换
+      // 实际项目中可能需要 moment(record.expiryDate)
+      materialForm.setFieldsValue(record)
+    } else {
+      materialForm.resetFields()
+    }
+    setMaterialModalVisible(true)
+  }
 
   // 基地管理数据
   const tobaccoBases: TobaccoBase[] = [
@@ -857,9 +913,21 @@ const MaterialManagement: React.FC = () => {
       }
     },
     {
-      title: '供应商',
-      dataIndex: 'supplier',
-      key: 'supplier'
+      title: '操作',
+      key: 'action',
+      render: (text: any, record: any) => (
+        <Space size="middle">
+          <Button type="link" icon={<EyeOutlined />} size="small" onClick={() => openMaterialModal('view', record)}>
+            查看
+          </Button>
+          <Button type="link" icon={<EditOutlined />} size="small" onClick={() => openMaterialModal('edit', record)}>
+            编辑
+          </Button>
+          <Button type="link" danger icon={<DeleteOutlined />} size="small" onClick={() => handleDeleteMaterial(record.id)}>
+            删除
+          </Button>
+        </Space>
+      )
     }
   ]
 
@@ -877,7 +945,7 @@ const MaterialManagement: React.FC = () => {
           <Card>
             <Statistic
               title="原料总数"
-              value={materials.length}
+              value={materialList.length}
               prefix={<DatabaseOutlined />}
               valueStyle={{ color: '#1890ff' }}
             />
@@ -887,7 +955,7 @@ const MaterialManagement: React.FC = () => {
           <Card>
             <Statistic
               title="库存预警"
-              value={materials.filter(m => m.status === 'warning' || m.status === 'low').length}
+              value={materialList.filter(m => m.status === 'warning' || m.status === 'low').length}
               prefix={<WarningOutlined />}
               valueStyle={{ color: '#faad14' }}
             />
@@ -897,7 +965,7 @@ const MaterialManagement: React.FC = () => {
           <Card>
             <Statistic
               title="正常库存"
-              value={materials.filter(m => m.status === 'normal').length}
+              value={materialList.filter(m => m.status === 'normal').length}
               prefix={<CheckCircleOutlined />}
               valueStyle={{ color: '#52c41a' }}
             />
@@ -907,10 +975,17 @@ const MaterialManagement: React.FC = () => {
 
       <Tabs activeKey={activeTab} onChange={setActiveTab}>
         <TabPane tab="库存管理" key="materials" icon={<DatabaseOutlined />}>
-          <Card>
+          <Card
+            title="原料库存列表"
+            extra={
+              <Button type="primary" icon={<PlusOutlined />} onClick={() => openMaterialModal('add')}>
+                新增原料
+              </Button>
+            }
+          >
             <Table
               columns={columns}
-              dataSource={materials}
+              dataSource={materialList}
               rowKey="id"
               pagination={{
                 pageSize: 10,
@@ -920,6 +995,89 @@ const MaterialManagement: React.FC = () => {
               }}
             />
           </Card>
+          <Modal
+            title={materialModalType === 'add' ? '新增原料' : (materialModalType === 'edit' ? '编辑原料' : '原料详情')}
+            open={materialModalVisible}
+            onCancel={() => setMaterialModalVisible(false)}
+            onOk={() => {
+              if (materialModalType !== 'view') {
+                materialForm.submit()
+              } else {
+                setMaterialModalVisible(false)
+              }
+            }}
+            width={700}
+          >
+            <Form
+              form={materialForm}
+              layout="vertical"
+              onFinish={materialModalType === 'add' ? handleCreateMaterial : handleUpdateMaterial}
+              disabled={materialModalType === 'view'}
+            >
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Form.Item name="name" label="原料名称" rules={[{ required: true }]}>
+                    <Input />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item name="type" label="类型" rules={[{ required: true }]}>
+                    <Select>
+                      <Option value="主料">主料</Option>
+                      <Option value="辅料">辅料</Option>
+                      <Option value="调节料">调节料</Option>
+                      <Option value="香料烟">香料烟</Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Form.Item name="origin" label="产地" rules={[{ required: true }]}>
+                    <Input />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item name="grade" label="等级" rules={[{ required: true }]}>
+                    <Select>
+                      <Option value="High">S级</Option>
+                      <Option value="A级">A级</Option>
+                      <Option value="B级">B级</Option>
+                      <Option value="C级">C级</Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Form.Item name="stock" label="库存数量" rules={[{ required: true }]}>
+                    <InputNumber style={{ width: '100%' }} />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item name="unit" label="单位" rules={[{ required: true }]}>
+                    <Select>
+                      <Option value="kg">kg</Option>
+                      <Option value="吨">吨</Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Form.Item name="supplier" label="供应商">
+                    <Input />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item name="expiryDate" label="有效期">
+                    {/* 简化处理，实际可以使用 DatePicker */}
+                    <Input placeholder="YYYY-MM-DD" />
+                  </Form.Item>
+                </Col>
+              </Row>
+            </Form>
+          </Modal>
         </TabPane>
 
         <TabPane tab="基地管理" key="bases" icon={<HomeOutlined />}>
@@ -1446,7 +1604,7 @@ const MaterialManagement: React.FC = () => {
       <Modal
         title={
           modalType === 'add' ? '新增记录' :
-          modalType === 'edit' ? '编辑记录' : '记录详情'
+            modalType === 'edit' ? '编辑记录' : '记录详情'
         }
         open={modalVisible}
         onCancel={() => setModalVisible(false)}

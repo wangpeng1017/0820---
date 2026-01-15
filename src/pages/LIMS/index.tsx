@@ -90,8 +90,11 @@ const LIMS: React.FC = () => {
   const [modalVisible, setModalVisible] = useState(false)
   const [modalType, setModalType] = useState<'add' | 'edit' | 'view'>('add')
 
+  const [currentSample, setCurrentSample] = useState<Sample | null>(null)
+  const [form] = Form.useForm()
+
   // 样品数据
-  const samples: Sample[] = [
+  const [sampleList, setSampleList] = useState<Sample[]>([
     {
       id: 'S001',
       sampleNo: 'SP2024032001',
@@ -215,7 +218,59 @@ const LIMS: React.FC = () => {
       expectedDate: '2024-03-27',
       notes: '环保合规检测，样品不合格'
     }
-  ]
+  ])
+
+  const handleCreateSample = () => {
+    form.validateFields().then(values => {
+      const newSample: Sample = {
+        id: `S${(sampleList.length + 1).toString().padStart(3, '0')}`,
+        sampleNo: `SP${new Date().toISOString().slice(0, 10).replace(/-/g, '')}${Math.floor(Math.random() * 1000).toString().padStart(4, '0')}`,
+        submitTime: new Date().toLocaleString(),
+        status: 'pending',
+        ...values,
+        testItems: values.testItems || [],
+      }
+      setSampleList([...sampleList, newSample])
+      setModalVisible(false)
+      form.resetFields()
+    })
+  }
+
+  const handleUpdateSample = () => {
+    form.validateFields().then(values => {
+      const updatedList = sampleList.map(item =>
+        item.id === currentSample?.id
+          ? { ...item, ...values }
+          : item
+      )
+      setSampleList(updatedList)
+      setModalVisible(false)
+      setCurrentSample(null)
+      form.resetFields()
+    })
+  }
+
+  const handleDeleteSample = (id: string) => {
+    Modal.confirm({
+      title: '确认删除',
+      content: '确定要删除这个样品吗？',
+      onOk: () => {
+        setSampleList(sampleList.filter(item => item.id !== id))
+      }
+    })
+  }
+
+  const openSampleModal = (type: 'add' | 'edit' | 'view', record?: Sample) => {
+    setModalType(type)
+    setCurrentSample(record || null)
+    if (record && type !== 'add') {
+      form.setFieldsValue(record)
+    } else {
+      form.resetFields()
+    }
+    setModalVisible(true)
+  }
+
 
   // 检测任务数据
   const testTasks: TestTask[] = [
@@ -631,13 +686,16 @@ const LIMS: React.FC = () => {
     {
       title: '操作',
       key: 'action',
-      render: () => (
+      render: (record: Sample) => (
         <Space size="middle">
-          <Button type="link" icon={<EyeOutlined />} size="small">
+          <Button type="link" icon={<EyeOutlined />} size="small" onClick={() => openSampleModal('view', record)}>
             查看
           </Button>
-          <Button type="link" icon={<EditOutlined />} size="small">
+          <Button type="link" icon={<EditOutlined />} size="small" onClick={() => openSampleModal('edit', record)}>
             编辑
+          </Button>
+          <Button type="link" icon={<DeleteOutlined />} size="small" danger onClick={() => handleDeleteSample(record.id)}>
+            删除
           </Button>
           <Button type="link" icon={<FileTextOutlined />} size="small">
             报告
@@ -891,7 +949,7 @@ const LIMS: React.FC = () => {
           <Card>
             <Statistic
               title="待检测样品"
-              value={samples.filter(s => s.status === 'pending').length}
+              value={sampleList.filter(s => s.status === 'pending').length}
               prefix={<ClockCircleOutlined />}
               valueStyle={{ color: '#faad14' }}
             />
@@ -901,7 +959,7 @@ const LIMS: React.FC = () => {
           <Card>
             <Statistic
               title="检测中样品"
-              value={samples.filter(s => s.status === 'testing').length}
+              value={sampleList.filter(s => s.status === 'testing').length}
               prefix={<ExperimentOutlined />}
               valueStyle={{ color: '#1890ff' }}
             />
@@ -963,17 +1021,17 @@ const LIMS: React.FC = () => {
                 <Option value="rejected">已拒绝</Option>
               </Select>
               <RangePicker placeholder={['开始日期', '结束日期']} />
-              <Button type="primary" icon={<PlusOutlined />}>
+              <Button type="primary" icon={<PlusOutlined />} onClick={() => openSampleModal('add')}>
                 新增样品
               </Button>
             </Space>
 
             <Table
               columns={sampleColumns}
-              dataSource={samples}
+              dataSource={sampleList}
               rowKey="id"
               pagination={{
-                total: samples.length,
+                total: sampleList.length,
                 pageSize: 10,
                 showSizeChanger: true,
                 showQuickJumper: true,
@@ -1146,38 +1204,42 @@ const LIMS: React.FC = () => {
           <Button key="cancel" onClick={() => setModalVisible(false)}>
             取消
           </Button>,
-          <Button key="submit" type="primary">
+          <Button key="submit" type="primary" onClick={modalType === 'add' ? handleCreateSample : handleUpdateSample}>
             {modalType === 'add' ? '创建' : '保存'}
           </Button>
         ]}
       >
-        <Form layout="vertical">
+        <Form layout="vertical" form={form}>
           <Row gutter={16}>
             <Col span={12}>
-              <Form.Item label="样品名称">
-                <Input placeholder="请输入样品名称" />
+              <Form.Item label="样品名称" name="sampleName" rules={[{ required: true, message: '请输入样品名称' }]}>
+                <Input placeholder="请输入样品名称" disabled={modalType === 'view'} />
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item label="样品类型">
-                <Select placeholder="请选择样品类型">
+              <Form.Item label="样品类型" name="sampleType" rules={[{ required: true, message: '请选择样品类型' }]}>
+                <Select placeholder="请选择样品类型" disabled={modalType === 'view'}>
                   <Option value="成品">成品</Option>
                   <Option value="原料">原料</Option>
                   <Option value="半成品">半成品</Option>
                   <Option value="包材">包材</Option>
+                  <Option value="香精">香精</Option>
+                  <Option value="滤棒">滤棒</Option>
+                  <Option value="环境">环境</Option>
+                  <Option value="废料">废料</Option>
                 </Select>
               </Form.Item>
             </Col>
           </Row>
           <Row gutter={16}>
             <Col span={12}>
-              <Form.Item label="样品来源">
-                <Input placeholder="请输入样品来源" />
+              <Form.Item label="样品来源" name="source">
+                <Input placeholder="请输入样品来源" disabled={modalType === 'view'} />
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item label="优先级">
-                <Select placeholder="请选择优先级">
+              <Form.Item label="优先级" name="priority">
+                <Select placeholder="请选择优先级" disabled={modalType === 'view'}>
                   <Option value="high">高</Option>
                   <Option value="normal">正常</Option>
                   <Option value="low">低</Option>
@@ -1185,8 +1247,58 @@ const LIMS: React.FC = () => {
               </Form.Item>
             </Col>
           </Row>
-          <Form.Item label="样品描述">
-            <Input.TextArea rows={3} placeholder="请输入样品描述" />
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item label="提交人" name="submitter">
+                <Input placeholder="请输入提交人" disabled={modalType === 'view'} />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item label="分配给" name="assignedTo">
+                <Select placeholder="请选择检测员" disabled={modalType === 'view'}>
+                  <Option value="李检测">李检测</Option>
+                  <Option value="赵检测">赵检测</Option>
+                  <Option value="孙检测">孙检测</Option>
+                  <Option value="周检测">周检测</Option>
+                  <Option value="吴检测">吴检测</Option>
+                  <Option value="钱检测">钱检测</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item label="预期完成时间" name="expectedDate">
+                <Input placeholder="YYYY-MM-DD" disabled={modalType === 'view'} />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item label="状态" name="status">
+                <Select placeholder="请选择状态" disabled={modalType === 'view'}>
+                  <Option value="pending">待检测</Option>
+                  <Option value="testing">检测中</Option>
+                  <Option value="completed">已完成</Option>
+                  <Option value="rejected">已拒绝</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Form.Item label="检测项目" name="testItems">
+            <Select mode="multiple" placeholder="请选择检测项目" disabled={modalType === 'view'}>
+              <Option value="焦油量">焦油量</Option>
+              <Option value="烟碱量">烟碱量</Option>
+              <Option value="一氧化碳">一氧化碳</Option>
+              <Option value="含水率">含水率</Option>
+              <Option value="水分">水分</Option>
+              <Option value="杂质">杂质</Option>
+              <Option value="色泽">色泽</Option>
+              <Option value="香气">香气</Option>
+            </Select>
+          </Form.Item>
+
+          <Form.Item label="备注" name="notes">
+            <Input.TextArea rows={3} placeholder="请输入备注" disabled={modalType === 'view'} />
           </Form.Item>
         </Form>
       </Modal>
