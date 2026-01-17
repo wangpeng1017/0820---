@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>数字化研发移动端 - Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f5f5;
+            padding-bottom: 60px;
+        }
+
+        /* 顶部导航 */
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .header p {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-top: 4px;
+        }
+
+        /* 主内容区 */
+        .main-content {
+            margin-top: 80px;
+            padding: 0 15px 20px;
+        }
+
+        /* 功能卡片 */
+        .feature-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .feature-card h2 {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .feature-card h2::before {
+            content: '';
+            width: 4px;
+            height: 16px;
+            background: #667eea;
+            margin-right: 10px;
+            border-radius: 2px;
+        }
+
+        /* 表单样式 */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-label.required::after {
+            content: '*';
+            color: #ff4d4f;
+            margin-left: 4px;
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        /* 评分滑块 */
+        .rating-slider {
+            margin: 15px 0;
+        }
+
+        .rating-slider input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #e0e0e0;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .rating-slider input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+        }
+
+        .rating-value {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        .rating-current {
+            font-size: 18px;
+            font-weight: 600;
+            color: #667eea;
+            text-align: center;
+            margin: 10px 0;
+        }
+
+        /* 按钮样式 */
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #667eea;
+            border: 1px solid #667eea;
+        }
+
+        /* 警告提示 */
+        .alert {
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+        }
+
+        .alert-warning {
+            background: #fff7e6;
+            border: 1px solid #ffd591;
+            color: #d46b08;
+        }
+
+        .alert-danger {
+            background: #fff1f0;
+            border: 1px solid #ffccc7;
+            color: #cf1322;
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .alert-icon {
+            font-size: 18px;
+            margin-right: 10px;
+        }
+
+        /* 搜索框 */
+        .search-box {
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 45px 12px 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 14px;
+        }
+
+        .search-btn {
+            position: absolute;
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #667eea;
+            color: white;
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .voice-btn {
+            position: absolute;
+            right: 45px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: transparent;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        /* 底部导航 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        }
+
+        .nav-item {
+            flex: 1;
+            text-align: center;
+            color: #999;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .nav-item.active {
+            color: #667eea;
+        }
+
+        .nav-item-icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+
+        /* 标签页 */
+        .tabs {
+            display: flex;
+            background: white;
+            border-radius: 8px;
+            padding: 4px;
+            margin-bottom: 15px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            background: #667eea;
+            color: white;
+        }
+
+        /* 隐藏内容 */
+        .hidden {
+            display: none;
+        }
+
+        /* 数据列表 */
+        .data-list {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .data-item {
+            padding: 15px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .data-item:last-child {
+            border-bottom: none;
+        }
+
+        .data-item-title {
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .data-item-meta {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            margin-left: 8px;
+        }
+
+        .badge-success {
+            background: #f6ffed;
+            color: #52c41a;
+            border: 1px solid #b7eb8f;
+        }
+
+        .badge-warning {
+            background: #fff7e6;
+            color: #fa8c16;
+            border: 1px solid #ffd591;
+        }
+
+        .badge-danger {
+            background: #fff1f0;
+            color: #ff4d4f;
+            border: 1px solid #ffccc7;
+        }
+
+        /* 扫码按钮 */
+        .scan-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+            background: #f0f0f0;
+            border: 2px dashed #d9d9d9;
+            border-radius: 8px;
+            color: #666;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .scan-btn:active {
+            background: #e6e6e6;
+        }
+
+        .scan-icon {
+            font-size: 20px;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航 -->
+    <div class="header">
+        <h1>数字化研发移动端</h1>
+        <p>安徽中烟数字化研发一体化平台</p>
+    </div>
+
+    <!-- 主内容区 -->
+    <div class="main-content">
+        <!-- 标签页切换 -->
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('approval')">业务审批</div>
+            <div class="tab" onclick="switchTab('tasting')">评吸嗅香</div>
+            <div class="tab" onclick="switchTab('quality')">质量检测</div>
+            <div class="tab" onclick="switchTab('search')">智能查询</div>
+        </div>
+
+        <!-- 1. 业务审批模块 -->
+        <div id="approval-content" class="tab-content">
+            <div class="feature-card">
+                <h2>待审批事项</h2>
+                <div class="data-list">
+                    <div class="data-item">
+                        <div class="data-item-title">
+                            新产品配方设计方案
+                            <span class="badge badge-warning">待审批</span>
+                        </div>
+                        <div class="data-item-meta">
+                            申请人：张三 | 2024-03-15 10:30
+                        </div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-item-title">
+                            工艺标准修订申请
+                            <span class="badge badge-warning">待审批</span>
+                        </div>
+                        <div class="data-item-meta">
+                            申请人：李四 | 2024-03-14 15:20
+                        </div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-item-title">
+                            实验方案审核
+                            <span class="badge badge-success">已通过</span>
+                        </div>
+                        <div class="data-item-meta">
+                            申请人：王五 | 2024-03-13 09:15
+                        </div>
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="alert('跳转到审批详情页面')">查看详情</button>
+            </div>
+        </div>
+
+        <!-- 2. 评吸嗅香模块 -->
+        <div id="tasting-content" class="tab-content hidden">
+            <div class="feature-card">
+                <h2>感官评吸</h2>
+
+                <div class="form-group">
+                    <label class="form-label required">评吸对象</label>
+                    <select class="form-select">
+                        <option>请选择评吸对象</option>
+                        <option>卷烟成品</option>
+                        <option>烟叶原料</option>
+                        <option>香精香料</option>
+                        <option>辅助材料</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label required">样品编号</label>
+                    <div class="scan-btn" onclick="scanCode()">
+                        <span class="scan-icon">📷</span>
+                        扫码录入样品信息
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label required">香气质量 (0-100分)</label>
+                    <div class="rating-slider">
+                        <input type="range" min="0" max="100" value="75" oninput="updateRating('aroma', this.value)">
+                        <div class="rating-current" id="aroma-value">75分</div>
+                        <div class="rating-value">
+                            <span>0</span>
+                            <span>50</span>
+                            <span>100</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label required">口感质量 (0-100分)</label>
+                    <div class="rating-slider">
+                        <input type="range" min="0" max="100" value="80" oninput="updateRating('taste', this.value)">
+                        <div class="rating-current" id="taste-value">80分</div>
+                        <div class="rating-value">
+                            <span>0</span>
+                            <span>50</span>
+                            <span>100</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label required">余味质量 (0-100分)</label>
+                    <div class="rating-slider">
+                        <input type="range" min="0" max="100" value="70" oninput="updateRating('aftertaste', this.value)">
+                        <div class="rating-current" id="aftertaste-value">70分</div>
+                        <div class="rating-value">
+                            <span>0</span>
+                            <span>50</span>
+                            <span>100</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">详细描述</label>
+                    <textarea class="form-textarea" placeholder="请输入详细的评吸描述..."></textarea>
+                </div>
+
+                <button class="btn btn-primary" onclick="submitTasting()">提交评吸数据</button>
+                <button class="btn btn-secondary" onclick="saveDraft()">保存草稿（离线）</button>
+            </div>
+
+            <div class="feature-card">
+                <h2>香料嗅香评价</h2>
+
+                <div class="form-group">
+                    <label class="form-label required">香料名称</label>
+                    <input type="text" class="form-input" placeholder="请输入香料名称">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label required">香气强度 (0-10)</label>
+                    <div class="rating-slider">
+                        <input type="range" min="0" max="10" value="7" oninput="updateRating('intensity', this.value)">
+                        <div class="rating-current" id="intensity-value">7级</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label required">香气类型</label>
+                    <select class="form-select">
+                        <option>请选择香气类型</option>
+                        <option>花香型</option>
+                        <option>果香型</option>
+                        <option>木香型</option>
+                        <option>草本型</option>
+                        <option>辛香型</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">嗅香备注</label>
+                    <textarea class="form-textarea" placeholder="请输入嗅香评价备注..."></textarea>
+                </div>
+
+                <button class="btn btn-primary" onclick="submitSmelling()">提交嗅香数据</button>
+            </div>
+        </div>
+
+        <!-- 3. 质量检测模块 -->
+        <div id="quality-content" class="tab-content hidden">
+            <div class="feature-card">
+                <h2>质量检测录入</h2>
+
+                <div id="quality-alert" class="alert alert-warning hidden">
+                    <span class="alert-icon">⚠️</span>
+                    <span>检测数据接近阈值，请注意！</span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label required">检测项目</label>
+                    <select class="form-select" onchange="loadStandards(this.value)">
+                        <option>请选择检测项目</option>
+                        <option value="tar">焦油含量</option>
+                        <option value="nicotine">烟碱含量</option>
+                        <option value="co">一氧化碳含量</option>
+                        <option value="moisture">水分含量</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label required">检测值</label>
+                    <input type="number" class="form-input" id="test-value" placeholder="请输入检测值" oninput="checkThreshold()">
+                    <div style="font-size: 12px; color: #999; margin-top: 5px;">
+                        标准范围：<span id="standard-range">-</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label required">检测人员</label>
+                    <input type="text" class="form-input" placeholder="请输入检测人员姓名">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">外观评价</label>
+                    <textarea class="form-textarea" placeholder="请输入外观评价描述..."></textarea>
+                </div>
+
+                <button class="btn btn-primary" onclick="submitQuality()">提交检测数据</button>
+            </div>
+        </div>
+
+        <!-- 4. 智能查询模块 -->
+        <div id="search-content" class="tab-content hidden">
+            <div class="feature-card">
+                <h2>智能搜索</h2>
+
+                <div class="search-box">
+                    <input type="text" class="search-input" id="search-input" placeholder="搜索审批记录、检测报告...">
+                    <button class="voice-btn" onclick="startVoiceInput()">🎤</button>
+                    <button class="search-btn" onclick="performSearch()">🔍</button>
+                </div>
+
+                <div class="alert alert-warning">
+                    <span class="alert-icon">💡</span>
+                    <span>支持语音输入，点击麦克风图标开始</span>
+                </div>
+
+                <div id="search-results" class="hidden">
+                    <h3 style="font-size: 14px; color: #666; margin: 15px 0 10px;">搜索结果</h3>
+                    <div class="data-list">
+                        <div class="data-item">
+                            <div class="data-item-title">
+                                配方设计审批记录
+                                <span class="badge badge-success">已通过</span>
+                            </div>
+                            <div class="data-item-meta">
+                                来源：审批系统 | 2024-03-15
+                            </div>
+                        </div>
+                        <div class="data-item">
+                            <div class="data-item-title">
+                                质量检测报告 - 焦油含量
+                                <span class="badge badge-success">合格</span>
+                            </div>
+                            <div class="data-item-meta">
+                                来源：LIMS系统 | 2024-03-14
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <h2>研发助手（AI对话）</h2>
+
+                <div class="form-group">
+                    <label class="form-label">向AI助手提问</label>
+                    <textarea class="form-textarea" id="ai-question" placeholder="例如：最近一周的审批通过率是多少？"></textarea>
+                </div>
+
+                <button class="btn btn-primary" onclick="askAI()">提问</button>
+
+                <div id="ai-response" class="hidden" style="margin-top: 15px; padding: 15px; background: #f9f9f9; border-radius: 8px;">
+                    <div style="font-size: 14px; color: #333; line-height: 1.6;">
+                        <strong>AI回答：</strong><br>
+                        根据系统数据分析，最近一周共有23项审批申请，其中20项已通过，通过率为87%。
+                        <div style="margin-top: 10px; font-size: 12px; color: #999;">
+                            📊 数据来源：审批系统 | 统计时间：2024-03-08 至 2024-03-15
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部导航 -->
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="switchTab('approval')">
+            <div class="nav-item-icon">📋</div>
+            <div>审批</div>
+        </div>
+        <div class="nav-item" onclick="switchTab('tasting')">
+            <div class="nav-item-icon">👃</div>
+            <div>评吸</div>
+        </div>
+        <div class="nav-item" onclick="switchTab('quality')">
+            <div class="nav-item-icon">🔬</div>
+            <div>检测</div>
+        </div>
+        <div class="nav-item" onclick="switchTab('search')">
+            <div class="nav-item-icon">🔍</div>
+            <div>查询</div>
+        </div>
+    </div>
+
+    <script>
+        // 标签页切换
+        function switchTab(tab) {
+            // 隐藏所有内容
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+
+            // 显示选中的内容
+            document.getElementById(tab + '-content').classList.remove('hidden');
+
+            // 更新标签页和底部导航状态
+            const tabIndex = ['approval', 'tasting', 'quality', 'search'].indexOf(tab);
+            document.querySelectorAll('.tab')[tabIndex].classList.add('active');
+            document.querySelectorAll('.nav-item')[tabIndex].classList.add('active');
+        }
+
+        // 更新评分显示
+        function updateRating(type, value) {
+            const suffix = type === 'intensity' ? '级' : '分';
+            document.getElementById(type + '-value').textContent = value + suffix;
+        }
+
+        // 扫码功能
+        function scanCode() {
+            alert('调用摄像头扫描二维码...\n\n模拟扫描结果：\n样品编号：SP20240315001\n样品名称：中支卷烟\n批次：20240315\n供应商：安徽中烟');
+        }
+
+        // 提交评吸数据
+        function submitTasting() {
+            alert('评吸数据已提交！\n\n数据将实时同步至后端数据库，并与PC端评吸报告联动。');
+        }
+
+        // 保存草稿（离线）
+        function saveDraft() {
+            alert('草稿已保存到本地！\n\n网络恢复后将自动同步到服务器。');
+        }
+
+        // 提交嗅香数据
+        function submitSmelling() {
+            alert('嗅香数据已提交！\n\n数据已同步至香精香料数据库。');
+        }
+
+        // 加载检测标准
+        const standards = {
+            'tar': { min: 8, max: 12, unit: 'mg/支' },
+            'nicotine': { min: 0.8, max: 1.2, unit: 'mg/支' },
+            'co': { min: 10, max: 14, unit: 'mg/支' },
+            'moisture': { min: 11, max: 13, unit: '%' }
+        };
+
+        function loadStandards(type) {
+            if (standards[type]) {
+                const std = standards[type];
+                document.getElementById('standard-range').textContent =
+                    `${std.min} - ${std.max} ${std.unit}`;
+            }
+        }
+
+        // 检查阈值
+        function checkThreshold() {
+            const select = document.querySelector('#quality-content select');
+            const type = select.value;
+            const value = parseFloat(document.getElementById('test-value').value);
+            const alert = document.getElementById('quality-alert');
+
+            if (standards[type] && !isNaN(value)) {
+                const std = standards[type];
+
+                if (value < std.min || value > std.max) {
+                    // 超标，显示红色警告
+                    alert.classList.remove('hidden', 'alert-warning');
+                    alert.classList.add('alert-danger');
+                    alert.innerHTML = '<span class="alert-icon">🚨</span><span><strong>数据超标！</strong> 检测值超出标准范围，请立即复核！</span>';
+                } else if (Math.abs(value - std.min) < 0.5 || Math.abs(value - std.max) < 0.5) {
+                    // 接近阈值，显示黄色警告
+                    alert.classList.remove('hidden', 'alert-danger');
+                    alert.classList.add('alert-warning');
+                    alert.innerHTML = '<span class="alert-icon">⚠️</span><span>检测数据接近阈值，请注意！</span>';
+                } else {
+                    // 正常范围
+                    alert.classList.add('hidden');
+                }
+            }
+        }
+
+        // 提交质量检测数据
+        function submitQuality() {
+            const alert = document.getElementById('quality-alert');
+            if (alert.classList.contains('alert-danger')) {
+                if (confirm('检测数据超标！是否确认提交？')) {
+                    alert('质量检测数据已提交，并已触发超标预警通知！');
+                }
+            } else {
+                alert('质量检测数据已提交！');
+            }
+        }
+
+        // 执行搜索
+        function performSearch() {
+            const query = document.getElementById('search-input').value;
+            if (query.trim()) {
+                document.getElementById('search-results').classList.remove('hidden');
+                alert('搜索关键词：' + query + '\n\n正在全局搜索审批记录、检测报告、实验数据...');
+            }
+        }
+
+        // 语音输入
+        function startVoiceInput() {
+            alert('开始语音识别...\n\n模拟识别结果：\n"查询最近一周的焦油含量检测报告"');
+            document.getElementById('search-input').value = '最近一周的焦油含量检测报告';
+        }
+
+        // AI提问
+        function askAI() {
+            const question = document.getElementById('ai-question').value;
+            if (question.trim()) {
+                document.getElementById('ai-response').classList.remove('hidden');
+                alert('AI正在分析您的问题...\n\n问题：' + question);
+            }
+        }
+    </script>
+</body>
+</html>
