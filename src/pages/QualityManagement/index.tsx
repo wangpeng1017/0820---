@@ -1,86 +1,246 @@
-import React, { useState } from 'react'
-import { Card, Table, Button, Input, Select, Space, Tag, Modal, Tabs, Row, Col, Statistic, Progress, Descriptions, Alert } from 'antd'
+import React, { useState, useEffect } from 'react'
+import { Card, Tabs, Button, Table, Tag, Space, Row, Col, Statistic } from 'antd'
 import {
-  PlusOutlined,
+  BarChartOutlined,
   EditOutlined,
+  ExperimentOutlined,
   EyeOutlined,
-  DeleteOutlined,
-  SafetyOutlined,
-  CheckCircleOutlined,
-  WarningOutlined,
-  FileTextOutlined
+  FileTextOutlined,
+  NodeIndexOutlined,
+  PlusOutlined
 } from '@ant-design/icons'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 const { TabPane } = Tabs
-const { Search } = Input
 
-// Mock Data
-const testList = [
-  { id: 'QT001', sampleName: '成品烟支-A批次', type: 'finished', date: '2024-03-20', tester: '王质检', result: 'passed', description: '各项指标符合标准' },
-  { id: 'QT002', sampleName: '进口烟叶-B批次', type: 'material', date: '2024-03-19', tester: '李质检', result: 'warning', description: '水分含量偏高' },
-  { id: 'QT003', sampleName: '香精样品-C', type: 'flavor', date: '2024-03-18', tester: '张质检', result: 'failed', description: '重金属超标' }
-]
+// Tab 路径映射
+const TAB_PATH_MAP: Record<string, string> = {
+  'standard': 'standard',
+  'inspection': 'inspection',
+  'analysis': 'analysis',
+  'trace': 'trace',
+}
+
+const PATH_TAB_MAP: Record<string, string> = {
+  'standard': 'standard',
+  'inspection': 'inspection',
+  'analysis': 'analysis',
+  'trace': 'trace',
+}
 
 const QualityManagement: React.FC = () => {
-  const [modalVisible, setModalVisible] = useState(false)
-  const [currentTest, setCurrentTest] = useState<any>(null)
+  const location = useLocation()
+  const navigate = useNavigate()
 
-  const columns = [
-    { title: '检测单号', dataIndex: 'id', key: 'id' },
-    { title: '样品名称', dataIndex: 'sampleName', key: 'sampleName' },
-    { title: '检测类型', dataIndex: 'type', key: 'type' },
-    { title: '检测日期', dataIndex: 'date', key: 'date' },
-    { title: '检测员', dataIndex: 'tester', key: 'tester' },
-    {
-      title: '结论',
-      dataIndex: 'result',
-      key: 'result',
-      render: (result: string) => {
-        return result === 'passed' ? <Tag color="success">合格</Tag> : <Tag color="error">不合格</Tag>
-      }
-    },
-    {
-      title: '操作',
-      key: 'action',
-      render: (_: any, record: any) => (
-        <Space size="middle">
-          <Button type="link" size="small" icon={<EyeOutlined />} onClick={() => { setCurrentTest(record); setModalVisible(true) }}>报告</Button>
-          <Button type="link" size="small" icon={<EditOutlined />}>录入</Button>
-        </Space>
-      )
-    }
-  ]
+  // 从 URL 获取当前子路径
+  const getTabFromPath = () => {
+    const pathParts = location.pathname.split('/')
+    const subPath = pathParts[pathParts.length - 1]
+    return PATH_TAB_MAP[subPath] || 'standard'
+  }
+
+  const [activeTab, setActiveTab] = useState(getTabFromPath())
+
+  // URL 变化时更新 Tab
+  useEffect(() => {
+    setActiveTab(getTabFromPath())
+  }, [location.pathname])
+
+  // Tab 切换时更新 URL
+  const handleTabChange = (key: string) => {
+    setActiveTab(key)
+    const path = TAB_PATH_MAP[key] || key
+    navigate(`/quality-management/${path}`)
+  }
 
   return (
-    <div style={{ padding: '24px' }}>
+    <div>
       <div className="page-header">
-        <h1 className="page-title">质量管理中心</h1>
+        <h1 className="page-title">质量管理</h1>
+        <p className="page-description">
+          质量标准管理、检测管理、质量分析、质量追溯
+        </p>
       </div>
 
-      <div style={{ marginBottom: 24 }}>
-        <Row gutter={16}>
-          <Col span={6}><Card><Statistic title="今日检测批次" value={24} prefix={<FileTextOutlined />} /></Card></Col>
-          <Col span={6}><Card><Statistic title="一次合格率" value={99.2} suffix="%" prefix={<CheckCircleOutlined />} /></Card></Col>
-        </Row>
-      </div>
-
-      <Card title="质量检测列表">
-        <Space style={{ marginBottom: 16 }}>
-          <Search placeholder="单号/样品名称" style={{ width: 200 }} allowClear />
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => setModalVisible(true)}>新建检测</Button>
-        </Space>
-        <Table columns={columns} dataSource={testList} rowKey="id" />
-      </Card>
-
-      <Modal title="检测报告详情" open={modalVisible} onCancel={() => setModalVisible(false)} footer={null}>
-        {currentTest && (
-          <Descriptions column={1} bordered size="small">
-            <Descriptions.Item label="单号">{currentTest.id}</Descriptions.Item>
-            <Descriptions.Item label="样品">{currentTest.sampleName}</Descriptions.Item>
-            <Descriptions.Item label="结论">{currentTest.result}</Descriptions.Item>
-          </Descriptions>
-        )}
-      </Modal>
+      <Tabs activeKey={activeTab} onChange={handleTabChange}>
+        
+        <TabPane tab="质量标准管理" key="standard" icon={<FileTextOutlined />}>
+          <Card title="质量标准管理">
+            <Row gutter={[16, 16]}>
+              <Col span={6}>
+                <Statistic title="总数" value={Math.floor(Math.random() * 1000) + 100} />
+              </Col>
+              <Col span={6}>
+                <Statistic title="本月新增" value={Math.floor(Math.random() * 50) + 10} valueStyle={{ color: '#3f8600' }} />
+              </Col>
+              <Col span={6}>
+                <Statistic title="待处理" value={Math.floor(Math.random() * 20) + 5} valueStyle={{ color: '#cf1322' }} />
+              </Col>
+              <Col span={6}>
+                <Statistic title="完成率" value={Math.floor(Math.random() * 30) + 70} suffix="%" />
+              </Col>
+            </Row>
+            <Table
+              style={{ marginTop: 16 }}
+              columns={[
+                { title: '编号', dataIndex: 'id', key: 'id', width: 100 },
+                { title: '名称', dataIndex: 'name', key: 'name' },
+                { title: '状态', dataIndex: 'status', key: 'status', render: (s: string) => <Tag color={s === '正常' ? 'green' : 'orange'}>{s}</Tag> },
+                { title: '创建时间', dataIndex: 'createTime', key: 'createTime' },
+                {
+                  title: '操作', key: 'action',
+                  render: () => (
+                    <Space>
+                      <Button type="link" size="small" icon={<EyeOutlined />}>查看</Button>
+                      <Button type="link" size="small" icon={<EditOutlined />}>编辑</Button>
+                    </Space>
+                  )
+                }
+              ]}
+              dataSource={[
+                { key: '1', id: 'T001', name: '测试数据1', status: '正常', createTime: '2024-03-15' },
+                { key: '2', id: 'T002', name: '测试数据2', status: '正常', createTime: '2024-03-16' },
+                { key: '3', id: 'T003', name: '测试数据3', status: '待处理', createTime: '2024-03-17' },
+                { key: '4', id: 'T004', name: '测试数据4', status: '正常', createTime: '2024-03-18' },
+                { key: '5', id: 'T005', name: '测试数据5', status: '正常', createTime: '2024-03-19' }
+              ]}
+              pagination={{ pageSize: 10 }}
+            />
+          </Card>
+        </TabPane>
+        <TabPane tab="检测管理" key="inspection" icon={<ExperimentOutlined />}>
+          <Card title="检测管理">
+            <Row gutter={[16, 16]}>
+              <Col span={6}>
+                <Statistic title="总数" value={Math.floor(Math.random() * 1000) + 100} />
+              </Col>
+              <Col span={6}>
+                <Statistic title="本月新增" value={Math.floor(Math.random() * 50) + 10} valueStyle={{ color: '#3f8600' }} />
+              </Col>
+              <Col span={6}>
+                <Statistic title="待处理" value={Math.floor(Math.random() * 20) + 5} valueStyle={{ color: '#cf1322' }} />
+              </Col>
+              <Col span={6}>
+                <Statistic title="完成率" value={Math.floor(Math.random() * 30) + 70} suffix="%" />
+              </Col>
+            </Row>
+            <Table
+              style={{ marginTop: 16 }}
+              columns={[
+                { title: '编号', dataIndex: 'id', key: 'id', width: 100 },
+                { title: '名称', dataIndex: 'name', key: 'name' },
+                { title: '状态', dataIndex: 'status', key: 'status', render: (s: string) => <Tag color={s === '正常' ? 'green' : 'orange'}>{s}</Tag> },
+                { title: '创建时间', dataIndex: 'createTime', key: 'createTime' },
+                {
+                  title: '操作', key: 'action',
+                  render: () => (
+                    <Space>
+                      <Button type="link" size="small" icon={<EyeOutlined />}>查看</Button>
+                      <Button type="link" size="small" icon={<EditOutlined />}>编辑</Button>
+                    </Space>
+                  )
+                }
+              ]}
+              dataSource={[
+                { key: '1', id: 'T001', name: '测试数据1', status: '正常', createTime: '2024-03-15' },
+                { key: '2', id: 'T002', name: '测试数据2', status: '正常', createTime: '2024-03-16' },
+                { key: '3', id: 'T003', name: '测试数据3', status: '待处理', createTime: '2024-03-17' },
+                { key: '4', id: 'T004', name: '测试数据4', status: '正常', createTime: '2024-03-18' },
+                { key: '5', id: 'T005', name: '测试数据5', status: '正常', createTime: '2024-03-19' }
+              ]}
+              pagination={{ pageSize: 10 }}
+            />
+          </Card>
+        </TabPane>
+        <TabPane tab="质量分析" key="analysis" icon={<BarChartOutlined />}>
+          <Card title="质量分析">
+            <Row gutter={[16, 16]}>
+              <Col span={6}>
+                <Statistic title="总数" value={Math.floor(Math.random() * 1000) + 100} />
+              </Col>
+              <Col span={6}>
+                <Statistic title="本月新增" value={Math.floor(Math.random() * 50) + 10} valueStyle={{ color: '#3f8600' }} />
+              </Col>
+              <Col span={6}>
+                <Statistic title="待处理" value={Math.floor(Math.random() * 20) + 5} valueStyle={{ color: '#cf1322' }} />
+              </Col>
+              <Col span={6}>
+                <Statistic title="完成率" value={Math.floor(Math.random() * 30) + 70} suffix="%" />
+              </Col>
+            </Row>
+            <Table
+              style={{ marginTop: 16 }}
+              columns={[
+                { title: '编号', dataIndex: 'id', key: 'id', width: 100 },
+                { title: '名称', dataIndex: 'name', key: 'name' },
+                { title: '状态', dataIndex: 'status', key: 'status', render: (s: string) => <Tag color={s === '正常' ? 'green' : 'orange'}>{s}</Tag> },
+                { title: '创建时间', dataIndex: 'createTime', key: 'createTime' },
+                {
+                  title: '操作', key: 'action',
+                  render: () => (
+                    <Space>
+                      <Button type="link" size="small" icon={<EyeOutlined />}>查看</Button>
+                      <Button type="link" size="small" icon={<EditOutlined />}>编辑</Button>
+                    </Space>
+                  )
+                }
+              ]}
+              dataSource={[
+                { key: '1', id: 'T001', name: '测试数据1', status: '正常', createTime: '2024-03-15' },
+                { key: '2', id: 'T002', name: '测试数据2', status: '正常', createTime: '2024-03-16' },
+                { key: '3', id: 'T003', name: '测试数据3', status: '待处理', createTime: '2024-03-17' },
+                { key: '4', id: 'T004', name: '测试数据4', status: '正常', createTime: '2024-03-18' },
+                { key: '5', id: 'T005', name: '测试数据5', status: '正常', createTime: '2024-03-19' }
+              ]}
+              pagination={{ pageSize: 10 }}
+            />
+          </Card>
+        </TabPane>
+        <TabPane tab="质量追溯" key="trace" icon={<NodeIndexOutlined />}>
+          <Card title="质量追溯">
+            <Row gutter={[16, 16]}>
+              <Col span={6}>
+                <Statistic title="总数" value={Math.floor(Math.random() * 1000) + 100} />
+              </Col>
+              <Col span={6}>
+                <Statistic title="本月新增" value={Math.floor(Math.random() * 50) + 10} valueStyle={{ color: '#3f8600' }} />
+              </Col>
+              <Col span={6}>
+                <Statistic title="待处理" value={Math.floor(Math.random() * 20) + 5} valueStyle={{ color: '#cf1322' }} />
+              </Col>
+              <Col span={6}>
+                <Statistic title="完成率" value={Math.floor(Math.random() * 30) + 70} suffix="%" />
+              </Col>
+            </Row>
+            <Table
+              style={{ marginTop: 16 }}
+              columns={[
+                { title: '编号', dataIndex: 'id', key: 'id', width: 100 },
+                { title: '名称', dataIndex: 'name', key: 'name' },
+                { title: '状态', dataIndex: 'status', key: 'status', render: (s: string) => <Tag color={s === '正常' ? 'green' : 'orange'}>{s}</Tag> },
+                { title: '创建时间', dataIndex: 'createTime', key: 'createTime' },
+                {
+                  title: '操作', key: 'action',
+                  render: () => (
+                    <Space>
+                      <Button type="link" size="small" icon={<EyeOutlined />}>查看</Button>
+                      <Button type="link" size="small" icon={<EditOutlined />}>编辑</Button>
+                    </Space>
+                  )
+                }
+              ]}
+              dataSource={[
+                { key: '1', id: 'T001', name: '测试数据1', status: '正常', createTime: '2024-03-15' },
+                { key: '2', id: 'T002', name: '测试数据2', status: '正常', createTime: '2024-03-16' },
+                { key: '3', id: 'T003', name: '测试数据3', status: '待处理', createTime: '2024-03-17' },
+                { key: '4', id: 'T004', name: '测试数据4', status: '正常', createTime: '2024-03-18' },
+                { key: '5', id: 'T005', name: '测试数据5', status: '正常', createTime: '2024-03-19' }
+              ]}
+              pagination={{ pageSize: 10 }}
+            />
+          </Card>
+        </TabPane>
+      </Tabs>
     </div>
   )
 }

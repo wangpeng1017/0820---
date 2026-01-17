@@ -1,218 +1,293 @@
-import React, { useState } from 'react'
-import { Card, Table, Button, Input, Select, Space, Tag, Modal, Form, Tabs, Row, Col, Divider, Statistic, Progress, Descriptions, Alert, Timeline, Upload, message } from 'antd'
+import React, { useState, useEffect } from 'react'
+import { Card, Tabs, Button, Table, Tag, Space, Row, Col, Statistic } from 'antd'
 import {
-  PlusOutlined,
+  AlertOutlined,
+  BarChartOutlined,
+  CalculatorOutlined,
   EditOutlined,
   EyeOutlined,
-  SwapOutlined,
-  HistoryOutlined,
-  DownloadOutlined,
-  ArrowRightOutlined,
-  CheckCircleOutlined,
-  ExclamationCircleOutlined,
-  MinusCircleOutlined,
-  BulbOutlined,
-  ExperimentOutlined,
-  ThunderboltOutlined,
   FileTextOutlined,
-  RobotOutlined,
-  InboxOutlined,
-  LoadingOutlined,
-  DeleteOutlined
+  HistoryOutlined,
+  PlusOutlined
 } from '@ant-design/icons'
-import { Typography } from 'antd'
+import { useLocation, useNavigate } from 'react-router-dom'
 
-const { Text } = Typography
-const { Search } = Input
-const { Option } = Select
 const { TabPane } = Tabs
 
-// Mock Data
-const mockFormulasData = [
-  {
-    id: 'F001',
-    name: '云南香型配方V3.2',
-    version: 'V3.2',
-    category: 'tobacco',
-    status: 'approved',
-    creator: '张配方',
-    createTime: '2024-03-20 10:00:00',
-    updateTime: '2024-03-25 15:30:00',
-    description: '以云南烟叶为主体的香型配方，口感醇和',
-    ingredients: [
-      { id: '1', name: '云南烟叶', type: '主料', ratio: 50, unit: '%', supplier: '云南中烟', grade: 'A级' },
-      { id: '2', name: '贵州烟叶', type: '辅料', ratio: 30, unit: '%', supplier: '贵州中烟', grade: 'A级' },
-      { id: '3', name: '河南烟叶', type: '调节料', ratio: 20, unit: '%', supplier: '河南中烟', grade: 'B级' }
-    ],
-    cost: 35.5,
-    properties: {
-      tar: 8.5,
-      nicotine: 0.8,
-      co: 9.2,
-      moisture: 12.5
-    }
-  },
-  {
-    id: 'F002',
-    name: '清香型实验配方V1.0',
-    version: 'V1.0',
-    category: 'tobacco',
-    status: 'testing',
-    creator: '李研发',
-    createTime: '2024-03-22 09:30:00',
-    updateTime: '2024-03-22 09:30:00',
-    description: '探索清香型风格的实验性配方',
-    ingredients: [
-      { id: '1', name: '福建烟叶', type: '主料', ratio: 60, unit: '%', supplier: '福建中烟', grade: 'A级' },
-      { id: '2', name: '云南烟叶', type: '辅料', ratio: 40, unit: '%', supplier: '云南中烟', grade: 'B级' }
-    ],
-    cost: 32.0,
-    properties: {
-      tar: 8.0,
-      nicotine: 0.7,
-      co: 8.5,
-      moisture: 13.0
-    }
-  },
-  {
-    id: 'F003',
-    name: '高档礼盒配方V2.1',
-    version: 'V2.1',
-    category: 'tobacco',
-    status: 'draft',
-    creator: '王专家',
-    createTime: '2024-03-24 11:00:00',
-    updateTime: '2024-03-26 16:20:00',
-    description: '专为高档礼盒产品设计的配方',
-    ingredients: [
-      { id: '1', name: '津巴布韦烟叶', type: '主料', ratio: 40, unit: '%', supplier: '进口', grade: 'Top' },
-      { id: '2', name: '巴西烟叶', type: '辅料', ratio: 30, unit: '%', supplier: '进口', grade: 'Top' },
-      { id: '3', name: '云南烟叶', type: '调节料', ratio: 30, unit: '%', supplier: '云南中烟', grade: 'A级' }
-    ],
-    cost: 58.8,
-    properties: {
-      tar: 8.2,
-      nicotine: 0.75,
-      co: 8.8,
-      moisture: 12.8
-    }
-  }
-]
+// Tab 路径映射
+const TAB_PATH_MAP: Record<string, string> = {
+  'history': 'history',
+  'standard': 'standard',
+  'resource': 'resource',
+  'balance': 'balance',
+  'warning': 'warning',
+}
+
+const PATH_TAB_MAP: Record<string, string> = {
+  'history': 'history',
+  'standard': 'standard',
+  'resource': 'resource',
+  'balance': 'balance',
+  'warning': 'warning',
+}
 
 const FormulaManagement: React.FC = () => {
-  const [modalVisible, setModalVisible] = useState(false)
-  const [compareModalVisible, setCompareModalVisible] = useState(false)
-  const [smartInputModalVisible, setSmartInputModalVisible] = useState(false)
-  const [formulaList, setFormulaList] = useState(mockFormulasData)
-  const [form] = Form.useForm()
+  const location = useLocation()
+  const navigate = useNavigate()
 
-  const columns = [
-    {
-      title: '配方编号',
-      dataIndex: 'id',
-      key: 'id',
-    },
-    {
-      title: '配方名称',
-      dataIndex: 'name',
-      key: 'name',
-    },
-    {
-      title: '版本',
-      dataIndex: 'version',
-      key: 'version',
-      render: (text: string) => <Tag color="blue">{text}</Tag>
-    },
-    {
-      title: '状态',
-      dataIndex: 'status',
-      key: 'status',
-      render: (status: string) => {
-        let color = 'default'
-        let text = status
-        if (status === 'approved') { color = 'success'; text = '已批准' }
-        if (status === 'testing') { color = 'processing'; text = '测试中' }
-        if (status === 'draft') { color = 'warning'; text = '草稿' }
-        return <Tag color={color}>{text}</Tag>
-      }
-    },
-    {
-      title: '创建人',
-      dataIndex: 'creator',
-      key: 'creator',
-    },
-    {
-      title: '更新时间',
-      dataIndex: 'updateTime',
-      key: 'updateTime',
-    },
-    {
-      title: '操作',
-      key: 'action',
-      render: (_: any, record: any) => (
-        <Space size="middle">
-          <Button type="link" icon={<EyeOutlined />} size="small" onClick={() => setModalVisible(true)}>查看</Button>
-          <Button type="link" icon={<EditOutlined />} size="small">编辑</Button>
-          <Button type="link" danger icon={<DeleteOutlined />} size="small">删除</Button>
-        </Space>
-      )
-    }
-  ]
+  // 从 URL 获取当前子路径
+  const getTabFromPath = () => {
+    const pathParts = location.pathname.split('/')
+    const subPath = pathParts[pathParts.length - 1]
+    return PATH_TAB_MAP[subPath] || 'history'
+  }
+
+  const [activeTab, setActiveTab] = useState(getTabFromPath())
+
+  // URL 变化时更新 Tab
+  useEffect(() => {
+    setActiveTab(getTabFromPath())
+  }, [location.pathname])
+
+  // Tab 切换时更新 URL
+  const handleTabChange = (key: string) => {
+    setActiveTab(key)
+    const path = TAB_PATH_MAP[key] || key
+    navigate(`/formula-management/${path}`)
+  }
 
   return (
-    <div style={{ padding: '24px' }}>
+    <div>
       <div className="page-header">
         <h1 className="page-title">叶组配方管理</h1>
-        <p className="page-description">管理叶组配方的创建、编辑、版本控制和历史追溯</p>
+        <p className="page-description">
+          配方历史数据库、配方标准管理、配方资源运行分析
+        </p>
       </div>
 
-      <Tabs defaultActiveKey="management">
-        <TabPane tab="配方管理" key="management" icon={<FileTextOutlined />}>
-          <Card>
-            <Space style={{ marginBottom: 16 }}>
-              <Search placeholder="搜索配方名称或编号" style={{ width: 300 }} allowClear />
-              <Select placeholder="状态" style={{ width: 120 }} allowClear>
-                <Option value="draft">草稿</Option>
-                <Option value="testing">测试中</Option>
-                <Option value="approved">已批准</Option>
-              </Select>
-              <Button type="primary" icon={<PlusOutlined />} onClick={() => setModalVisible(true)}>新建配方</Button>
-              <Button icon={<SwapOutlined />} onClick={() => setCompareModalVisible(true)}>版本比对</Button>
-              <Button icon={<RobotOutlined />} onClick={() => setSmartInputModalVisible(true)}>智能录入</Button>
-            </Space>
-            <Table columns={columns} dataSource={formulaList} rowKey="id" />
+      <Tabs activeKey={activeTab} onChange={handleTabChange}>
+        
+        <TabPane tab="配方历史数据库" key="history" icon={<HistoryOutlined />}>
+          <Card title="配方历史数据库">
+            <Row gutter={[16, 16]}>
+              <Col span={6}>
+                <Statistic title="总数" value={Math.floor(Math.random() * 1000) + 100} />
+              </Col>
+              <Col span={6}>
+                <Statistic title="本月新增" value={Math.floor(Math.random() * 50) + 10} valueStyle={{ color: '#3f8600' }} />
+              </Col>
+              <Col span={6}>
+                <Statistic title="待处理" value={Math.floor(Math.random() * 20) + 5} valueStyle={{ color: '#cf1322' }} />
+              </Col>
+              <Col span={6}>
+                <Statistic title="完成率" value={Math.floor(Math.random() * 30) + 70} suffix="%" />
+              </Col>
+            </Row>
+            <Table
+              style={{ marginTop: 16 }}
+              columns={[
+                { title: '编号', dataIndex: 'id', key: 'id', width: 100 },
+                { title: '名称', dataIndex: 'name', key: 'name' },
+                { title: '状态', dataIndex: 'status', key: 'status', render: (s: string) => <Tag color={s === '正常' ? 'green' : 'orange'}>{s}</Tag> },
+                { title: '创建时间', dataIndex: 'createTime', key: 'createTime' },
+                {
+                  title: '操作', key: 'action',
+                  render: () => (
+                    <Space>
+                      <Button type="link" size="small" icon={<EyeOutlined />}>查看</Button>
+                      <Button type="link" size="small" icon={<EditOutlined />}>编辑</Button>
+                    </Space>
+                  )
+                }
+              ]}
+              dataSource={[
+                { key: '1', id: 'T001', name: '测试数据1', status: '正常', createTime: '2024-03-15' },
+                { key: '2', id: 'T002', name: '测试数据2', status: '正常', createTime: '2024-03-16' },
+                { key: '3', id: 'T003', name: '测试数据3', status: '待处理', createTime: '2024-03-17' },
+                { key: '4', id: 'T004', name: '测试数据4', status: '正常', createTime: '2024-03-18' },
+                { key: '5', id: 'T005', name: '测试数据5', status: '正常', createTime: '2024-03-19' }
+              ]}
+              pagination={{ pageSize: 10 }}
+            />
           </Card>
         </TabPane>
-        <TabPane tab="智能设计" key="ai-design" icon={<BulbOutlined />}>
-          <Card title="配方智能设计" extra={<Tag color="blue">AI驱动</Tag>}>
-            <Alert message="AI配方设计助手" description="基于遗传算法和大语言模型，120秒内生成配方候选方案" type="info" showIcon style={{ marginBottom: 16 }} />
-            <Button type="primary" icon={<ThunderboltOutlined />}>开始智能设计</Button>
+        <TabPane tab="叶组配方标准管理" key="standard" icon={<FileTextOutlined />}>
+          <Card title="叶组配方标准管理">
+            <Row gutter={[16, 16]}>
+              <Col span={6}>
+                <Statistic title="总数" value={Math.floor(Math.random() * 1000) + 100} />
+              </Col>
+              <Col span={6}>
+                <Statistic title="本月新增" value={Math.floor(Math.random() * 50) + 10} valueStyle={{ color: '#3f8600' }} />
+              </Col>
+              <Col span={6}>
+                <Statistic title="待处理" value={Math.floor(Math.random() * 20) + 5} valueStyle={{ color: '#cf1322' }} />
+              </Col>
+              <Col span={6}>
+                <Statistic title="完成率" value={Math.floor(Math.random() * 30) + 70} suffix="%" />
+              </Col>
+            </Row>
+            <Table
+              style={{ marginTop: 16 }}
+              columns={[
+                { title: '编号', dataIndex: 'id', key: 'id', width: 100 },
+                { title: '名称', dataIndex: 'name', key: 'name' },
+                { title: '状态', dataIndex: 'status', key: 'status', render: (s: string) => <Tag color={s === '正常' ? 'green' : 'orange'}>{s}</Tag> },
+                { title: '创建时间', dataIndex: 'createTime', key: 'createTime' },
+                {
+                  title: '操作', key: 'action',
+                  render: () => (
+                    <Space>
+                      <Button type="link" size="small" icon={<EyeOutlined />}>查看</Button>
+                      <Button type="link" size="small" icon={<EditOutlined />}>编辑</Button>
+                    </Space>
+                  )
+                }
+              ]}
+              dataSource={[
+                { key: '1', id: 'T001', name: '测试数据1', status: '正常', createTime: '2024-03-15' },
+                { key: '2', id: 'T002', name: '测试数据2', status: '正常', createTime: '2024-03-16' },
+                { key: '3', id: 'T003', name: '测试数据3', status: '待处理', createTime: '2024-03-17' },
+                { key: '4', id: 'T004', name: '测试数据4', status: '正常', createTime: '2024-03-18' },
+                { key: '5', id: 'T005', name: '测试数据5', status: '正常', createTime: '2024-03-19' }
+              ]}
+              pagination={{ pageSize: 10 }}
+            />
           </Card>
         </TabPane>
-        <TabPane tab="配方验证" key="validation" icon={<ExperimentOutlined />}>
-          <Card title="验证结果" size="small">
-            <Alert message="验证通过" description="配方设计基本符合预期目标" type="success" showIcon />
+        <TabPane tab="配方资源运行分析" key="resource" icon={<BarChartOutlined />}>
+          <Card title="配方资源运行分析">
+            <Row gutter={[16, 16]}>
+              <Col span={6}>
+                <Statistic title="总数" value={Math.floor(Math.random() * 1000) + 100} />
+              </Col>
+              <Col span={6}>
+                <Statistic title="本月新增" value={Math.floor(Math.random() * 50) + 10} valueStyle={{ color: '#3f8600' }} />
+              </Col>
+              <Col span={6}>
+                <Statistic title="待处理" value={Math.floor(Math.random() * 20) + 5} valueStyle={{ color: '#cf1322' }} />
+              </Col>
+              <Col span={6}>
+                <Statistic title="完成率" value={Math.floor(Math.random() * 30) + 70} suffix="%" />
+              </Col>
+            </Row>
+            <Table
+              style={{ marginTop: 16 }}
+              columns={[
+                { title: '编号', dataIndex: 'id', key: 'id', width: 100 },
+                { title: '名称', dataIndex: 'name', key: 'name' },
+                { title: '状态', dataIndex: 'status', key: 'status', render: (s: string) => <Tag color={s === '正常' ? 'green' : 'orange'}>{s}</Tag> },
+                { title: '创建时间', dataIndex: 'createTime', key: 'createTime' },
+                {
+                  title: '操作', key: 'action',
+                  render: () => (
+                    <Space>
+                      <Button type="link" size="small" icon={<EyeOutlined />}>查看</Button>
+                      <Button type="link" size="small" icon={<EditOutlined />}>编辑</Button>
+                    </Space>
+                  )
+                }
+              ]}
+              dataSource={[
+                { key: '1', id: 'T001', name: '测试数据1', status: '正常', createTime: '2024-03-15' },
+                { key: '2', id: 'T002', name: '测试数据2', status: '正常', createTime: '2024-03-16' },
+                { key: '3', id: 'T003', name: '测试数据3', status: '待处理', createTime: '2024-03-17' },
+                { key: '4', id: 'T004', name: '测试数据4', status: '正常', createTime: '2024-03-18' },
+                { key: '5', id: 'T005', name: '测试数据5', status: '正常', createTime: '2024-03-19' }
+              ]}
+              pagination={{ pageSize: 10 }}
+            />
+          </Card>
+        </TabPane>
+        <TabPane tab="配方维护及平衡测算" key="balance" icon={<CalculatorOutlined />}>
+          <Card title="配方维护及平衡测算">
+            <Row gutter={[16, 16]}>
+              <Col span={6}>
+                <Statistic title="总数" value={Math.floor(Math.random() * 1000) + 100} />
+              </Col>
+              <Col span={6}>
+                <Statistic title="本月新增" value={Math.floor(Math.random() * 50) + 10} valueStyle={{ color: '#3f8600' }} />
+              </Col>
+              <Col span={6}>
+                <Statistic title="待处理" value={Math.floor(Math.random() * 20) + 5} valueStyle={{ color: '#cf1322' }} />
+              </Col>
+              <Col span={6}>
+                <Statistic title="完成率" value={Math.floor(Math.random() * 30) + 70} suffix="%" />
+              </Col>
+            </Row>
+            <Table
+              style={{ marginTop: 16 }}
+              columns={[
+                { title: '编号', dataIndex: 'id', key: 'id', width: 100 },
+                { title: '名称', dataIndex: 'name', key: 'name' },
+                { title: '状态', dataIndex: 'status', key: 'status', render: (s: string) => <Tag color={s === '正常' ? 'green' : 'orange'}>{s}</Tag> },
+                { title: '创建时间', dataIndex: 'createTime', key: 'createTime' },
+                {
+                  title: '操作', key: 'action',
+                  render: () => (
+                    <Space>
+                      <Button type="link" size="small" icon={<EyeOutlined />}>查看</Button>
+                      <Button type="link" size="small" icon={<EditOutlined />}>编辑</Button>
+                    </Space>
+                  )
+                }
+              ]}
+              dataSource={[
+                { key: '1', id: 'T001', name: '测试数据1', status: '正常', createTime: '2024-03-15' },
+                { key: '2', id: 'T002', name: '测试数据2', status: '正常', createTime: '2024-03-16' },
+                { key: '3', id: 'T003', name: '测试数据3', status: '待处理', createTime: '2024-03-17' },
+                { key: '4', id: 'T004', name: '测试数据4', status: '正常', createTime: '2024-03-18' },
+                { key: '5', id: 'T005', name: '测试数据5', status: '正常', createTime: '2024-03-19' }
+              ]}
+              pagination={{ pageSize: 10 }}
+            />
+          </Card>
+        </TabPane>
+        <TabPane tab="关键原料库存预警" key="warning" icon={<AlertOutlined />}>
+          <Card title="关键原料库存预警">
+            <Row gutter={[16, 16]}>
+              <Col span={6}>
+                <Statistic title="总数" value={Math.floor(Math.random() * 1000) + 100} />
+              </Col>
+              <Col span={6}>
+                <Statistic title="本月新增" value={Math.floor(Math.random() * 50) + 10} valueStyle={{ color: '#3f8600' }} />
+              </Col>
+              <Col span={6}>
+                <Statistic title="待处理" value={Math.floor(Math.random() * 20) + 5} valueStyle={{ color: '#cf1322' }} />
+              </Col>
+              <Col span={6}>
+                <Statistic title="完成率" value={Math.floor(Math.random() * 30) + 70} suffix="%" />
+              </Col>
+            </Row>
+            <Table
+              style={{ marginTop: 16 }}
+              columns={[
+                { title: '编号', dataIndex: 'id', key: 'id', width: 100 },
+                { title: '名称', dataIndex: 'name', key: 'name' },
+                { title: '状态', dataIndex: 'status', key: 'status', render: (s: string) => <Tag color={s === '正常' ? 'green' : 'orange'}>{s}</Tag> },
+                { title: '创建时间', dataIndex: 'createTime', key: 'createTime' },
+                {
+                  title: '操作', key: 'action',
+                  render: () => (
+                    <Space>
+                      <Button type="link" size="small" icon={<EyeOutlined />}>查看</Button>
+                      <Button type="link" size="small" icon={<EditOutlined />}>编辑</Button>
+                    </Space>
+                  )
+                }
+              ]}
+              dataSource={[
+                { key: '1', id: 'T001', name: '测试数据1', status: '正常', createTime: '2024-03-15' },
+                { key: '2', id: 'T002', name: '测试数据2', status: '正常', createTime: '2024-03-16' },
+                { key: '3', id: 'T003', name: '测试数据3', status: '待处理', createTime: '2024-03-17' },
+                { key: '4', id: 'T004', name: '测试数据4', status: '正常', createTime: '2024-03-18' },
+                { key: '5', id: 'T005', name: '测试数据5', status: '正常', createTime: '2024-03-19' }
+              ]}
+              pagination={{ pageSize: 10 }}
+            />
           </Card>
         </TabPane>
       </Tabs>
-
-      <Modal title="配方详情" open={modalVisible} onCancel={() => setModalVisible(false)} footer={null} width={800}>
-        <Descriptions title="基本信息" bordered>
-          <Descriptions.Item label="配方名称">云南香型配方V3.2</Descriptions.Item>
-          <Descriptions.Item label="版本">V3.2</Descriptions.Item>
-          <Descriptions.Item label="状态">已批准</Descriptions.Item>
-          <Descriptions.Item label="创建时间">2024-03-20</Descriptions.Item>
-          <Descriptions.Item label="描述" span={2}>以云南烟叶为主体的香型配方</Descriptions.Item>
-        </Descriptions>
-      </Modal>
-
-      <Modal title="配方版本比对" open={compareModalVisible} onCancel={() => setCompareModalVisible(false)} width={1000} footer={null}>
-        <p>选择两个配方进行比对...</p>
-      </Modal>
-
-      <Modal title="智能录入" open={smartInputModalVisible} onCancel={() => setSmartInputModalVisible(false)} footer={null}>
-        <p>支持文字录入和图片识别...</p>
-      </Modal>
     </div>
   )
 }
