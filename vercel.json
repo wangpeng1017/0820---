@@ -1,5 +1,4 @@
 {
-
   "headers": [
     {
       "source": "/api/(.*)",
@@ -21,11 +20,7 @@
   ],
   "rewrites": [
     {
-      "source": "/packaging-design",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/packaging-design/(.*)",
+      "source": "/(.*)",
       "destination": "/index.html"
     }
   ]
