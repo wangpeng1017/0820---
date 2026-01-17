@@ -12,10 +12,29 @@
 *   **移动端**：Uni-app (一次开发，多端发布)
 
 ### 6.1.2 后端技术栈
-*   **微服务框架**：Spring Cloud Alibaba 2023 (Nacos, Sentinel, Seata, RocketMQ)
-*   **开发语言**：Java 17 (LTS)
-*   **ORM框架**：MyBatis-Plus 3.5
-*   **工作流引擎**：Camunda 7.0 / Flowable
+*   **微服务框架**：Spring Cloud Alibaba 2023 (Nacos, Sentinel, Seata, RocketMQ)。
+    *   **Nacos**：作为注册中心与配置中心，实现服务的自动发现与配置的动态变更。
+    *   **Sentinel**：负责微服务的流量控制、熔断降级，保障系统在高并发下的稳定性。
+    *   **Seata**：解决跨服务分布式事务问题（如配方下发与MES确认）。
+    *   **RocketMQ**：用于异步解耦，如检测任务完成后异步通知推送。
+*   **开发语言**：Java 17 (LTS)，采用现代语法特性提升代码可读性与执行效率。
+*   **ORM框架**：MyBatis-Plus 3.5，提供强大的 CRUD 自动注入功能及分页插件。
+*   **工作流引擎**：Camunda 7.0 / Flowable，支持 BPMN 2.0 标准，实现复杂研发流程的可视化配置。
+
+### 6.1.3 微服务拆分架构
+
+我们根据“高内聚、低耦合”原则，将系统划分为以下微服务集群：
+
+| 服务名称 | 核心权责 | 数据存储建议 | 备注 |
+| :--- | :--- | :--- | :--- |
+| **Auth-Service** | 统一认证、RBAC权限、SSO登录。 | Redis + MySQL | 安全核心 |
+| **Project-Service** | 课题立项、WBS计划、经费执行。 | MySQL | 流程驱动 |
+| **Formula-Service** | 叶组/香精/辅材配方设计与版本。 | MySQL + MongoDB | 核心算法密集 |
+| **Lab-Service (LIMS)** | 检测委托、任务调度、仪器直连、报告生成。 | MySQL + Minio | 文件存储量大 |
+| **Quality-Service** | IQC/IPQC/OQC质检任务、SPC分析。 | PostgreSQL (时序支持) | 统计计算密集 |
+| **Inventory-Service** | 原料/辅材资产库、库存流水。 | MySQL | 强数据一致性 |
+| **AI-Service** | 语义搜索引擎、RAG大模型推理、配方寻优。 | Milvus (向量库) | 算力密集 |
+| **Gateway-Service** | 统一API网关、流量削峰、日志聚合。 | Redis (限流) | 唯一入口 |
 
 ## 6.2 数据库设计方案
 
@@ -26,28 +45,53 @@
 
 ### 6.2.2 核心数据模型 (ER图逻辑描述)
 
-#### 1. 配方域数据模型
-*   **Formula (配方头表)**
-    *   `id`: LONG (PK)
-    *   `code`: VARCHAR(32) (UK, 业务编码)
-    *   `status`: TINYINT (0:草稿, 1:审核中, 2:已发布)
-    *   `version`: VARCHAR(10) (V1.0)
-*   **FormulaItem (配方明细)**
-    *   `formula_id`: LONG (FK)
-    *   `material_id`: LONG (FK)
-    *   `ratio`: DECIMAL(5,2) (使用比例)
-    *   `cost`: DECIMAL(10,4) (快照成本)
+#### 1. 配方域数据模型深度设计
 
-#### 2. LIMS域数据模型
-*   **Entrustment (委托单)**
-    *   `id`: LONG
-    *   `sample_code`: VARCHAR(64) (条码)
-    *   `requester_id`: LONG
-*   **TestResult (检测结果)**
-    *   `entrust_id`: LONG
-    *   `indicator_code`: VARCHAR(32) (指标代码: Tar, Nicotine)
-    *   `value`: VARCHAR(32) (测定值)
-    *   `raw_file_url`: VARCHAR(255) (原始数据路径)
+**【表名：FORMULA_VERSION (配方版本主表)】**
+| 字段名 | 含义 | 类型 | 长度 | 备注 |
+| :--- | :--- | :--- | :--- | :--- |
+| FORMULA_ID | 配方唯一ID | BIGINT | 20 | 分布式ID (Snowflake) |
+| VERSION_NAME | 版本名称 | VARCHAR | 64 | 手动输入，如：2026春季改进版 |
+| BRAND_ID | 关联产品ID | BIGINT | 20 | 外键 |
+| CREATOR_ID | 创建人ID | BIGINT | 20 | |
+| SIGN_HASH | 数字签名 | VARCHAR | 256 | 用于防篡改验证 |
+
+**【表名：FORMULA_DETAIL (配方行表)】**
+| 字段名 | 含义 | 类型 | 长度 | 示例 |
+| :--- | :--- | :--- | :--- | :--- |
+| DETAIL_ID | 行ID | BIGINT | 20 | |
+| FORMULA_ID | 所属配方ID | BIGINT | 20 | |
+| MATERIAL_ID | 物料ID | BIGINT | 20 | |
+| RATIO_VALUE | 使用比例 | DECIMAL | 10,4 | 12.5000 |
+| SEQUENCE_NO | 投料顺序 | INT | 4 | |
+
+#### 2. LIMS域数据模型深度设计
+
+**【表名：SAMPLE_ARCHIVE (样品全生命周期表)】**
+| 字段名 | 含义 | 类型 | 长度 | 状态机 |
+| :--- | :--- | :--- | :--- | :--- |
+| SAMPLE_UUID | 样品全局唯一码 | VARCHAR | 64 | 条码扫描主键 |
+| BATCH_NO | 批次号 | VARCHAR | 32 | 关联生产批次 |
+| STORAGE_LOC | 存放库位 | VARCHAR | 128 | 关联仓库管理 |
+| EXPIRE_DATE | 留样期限 | DATETIME | - | 自动提醒销毁 |
+
+**【表名：TEST_RESULT_RAW (检测原始数据表)】**
+| 字段名 | 含义 | 类型 | 长度 | 备注 |
+| :--- | :--- | :--- | :--- | :--- |
+| RESULT_ID | 结果ID | BIGINT | 20 | |
+| TASK_ID | 任务ID | BIGINT | 20 | |
+| RAW_CONTENT | 原始数据片段 | JSON | - | 存储所有采集参数 |
+| CALC_LOG | 计算算法日志 | TEXT | - | 记录修约过程 |
+
+#### 3. 统计分析域模型 (PostgreSQL Hybrid)
+
+**【表名：QUALITY_SPC_REALTIME (时序质量数据)】**
+| 字段名 | 含义 | 类型 | 长度 | 说明 |
+| :--- | :--- | :--- | :--- | :--- |
+| POINT_TIME | 采集时间戳 | TIMESTAMP | 6 | 分区键 |
+| TAG_NAME | 采集点名称 | VARCHAR | 128 | 如：1#烘丝机出口水分 |
+| TAG_VALUE | 采集值 | FLOAT | 8 | |
+| ALARM_STATUS | 是否触发预警 | BOOLEAN | 1 | 存储SPC判定结果 |
 
 ## 6.3 接口设计方案
 
@@ -85,9 +129,22 @@
 *   **权限控制**：基于RBAC模型，按钮级权限控制。
 *   **日志审计**：记录所有敏感操作（查看配方、导出数据）日志，保留6个月以上。
 
-## 6.5 部署架构方案
-![部署架构图](docs/ppt/05_Deployment_Architecture.png)
-建议采用“两地三中心”的高可用容灾部署架构。
-*   **生产中心**: 承载核心业务流量，采用双机房双活部署。
-*   **同城灾备**: 实时同步数据，当生产中心故障时可快速切换。
-*   **异地灾备**: 定期冷备数据，防范区域性灾难。
+## 6.5 部署架构与运维方案
+
+### 6.5.1 容器化与协同运维
+系统全面采用容器化部署（Docker），并通过 Kubernetes (K8s) 进行集群调度管理。
+*   **容器引擎**：Docker 24.0+，实现环境强一致性。
+*   **编排工具**：Kubernetes 1.28+，提供自动扩缩容、滚动更新及自愈能力。
+*   **私有仓库**：Harbor，存储受控的应用镜像。
+
+### 6.5.2 CI/CD 自动化流水线
+我们建议构建基于 GitLab CI/CD 的自动化发布体系：
+1.  **代码提交**：开发者提交代码触发扫描（SonarQube）。
+2.  **自动构建**：Maven 编译打包，生成 Docker 镜像。
+3.  **环境推送**：自动推送到测试环境（UAT）进行回归测试。
+4.  **线上发布**：审核通过后，通过蓝绿部署或金丝雀发布上线。
+
+### 6.5.3 监控与预警体系
+*   **链路追踪**：SkyWalking实现微服务间的全链路调用监控。
+*   **日志中心**：ELK (Elasticsearch, Logstash, Kibana) 集中收集并分析全量日志。
+*   **指标监控**：Prometheus + Grafana，监控 CPU、物理机打样率等核心指标。

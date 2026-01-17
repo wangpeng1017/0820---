@@ -45,7 +45,10 @@ def parse_markdown_to_word(md_file_path, output_docx_path):
         'docs/BID_Chapter5_SystemFunctions.md',
         'docs/BID_Chapter6_Technical.md',
         'docs/BID_Chapter7_Implementation.md',
-        'docs/BID_Chapter8_Service.md'
+        'docs/BID_Chapter8_Service.md',
+        'docs/BID_Chapter9_Innovation.md',
+        'docs/BID_Chapter10_Security.md',
+        'docs/BID_Chapter11_Roadmap.md'
     ]
     
     print("开始读取章节文件...")
